@@ -51,7 +51,7 @@ const LoginPage = () => {
           <p>Faça login para gerenciar sua assistência.</p>
           {isDemoMode && (
             <div className="demo-alert">
-              Modo Demo Ativo. Configure VITE_SUPABASE_URL e KEY no .env para fluxo real.
+              Modo Demo Ativo. Acesse sem login para ver a interface, ou crie uma conta real.
             </div>
           )}
         </div>

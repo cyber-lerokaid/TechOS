@@ -60,7 +60,7 @@ const RegisterPage = () => {
           <p>Comece a gerenciar sua assistência hoje mesmo.</p>
           {isDemoMode && (
             <div className="demo-alert">
-              Modo Demo Ativo. Configure VITE_SUPABASE_URL e KEY no .env para fluxo real.
+              Modo Demo Ativo. Acesse sem registro para testar a interface, ou crie uma conta real.
             </div>
           )}
         </div>
