@@ -1,0 +1,39 @@
+.revenue-chart-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 300px;
+}
+
+.revenue-chart-header {
+  margin-bottom: 24px;
+}
+
+.revenue-chart-header h3 {
+  font-size: 16px;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.revenue-chart-body {
+  flex: 1;
+  min-height: 0;
+}
+
+.chart-tooltip {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-shadow: var(--shadow-md);
+}
+
+.chart-tooltip-label {
+  margin: 0 0 8px 0;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+}
