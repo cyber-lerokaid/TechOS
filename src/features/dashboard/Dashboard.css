@@ -1,0 +1,114 @@
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.dashboard-bottom-grid {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.kanban-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 3;
+  overflow: hidden;
+}
+
+.widgets-section {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── Metric Card ── */
+.metric-card {
+  background-color: var(--surface-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid var(--border-hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+  cursor: default;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-subtle);
+}
+
+.metric-card.highlight {
+  box-shadow: var(--shadow-primary);
+  border-color: var(--border-primary);
+}
+
+.metric-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.metric-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  line-height: 1;
+}
+
+.metric-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.metric-trend.positive { color: var(--color-success); }
+.metric-trend.negative { color: var(--color-danger); }
+
+@media (max-width: 1200px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .dashboard-bottom-grid {
+    flex-direction: column;
+    overflow: visible;
+    min-height: auto;
+  }
+  .widgets-section {
+    width: 100%;
+  }
+}
