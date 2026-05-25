@@ -1809,3 +1809,462 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============================================================
+   FEATURES V2 — Layout assimétrico com card hero
+   ============================================================ */
+
+.lp-features-v2 {
+  padding: 120px 0;
+  background: var(--lp-bg-2);
+  border-top: 1px solid var(--lp-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.lp-features-v2::before {
+  content: '';
+  position: absolute;
+  width: 700px; height: 500px;
+  background: radial-gradient(rgba(37,99,235,0.07) 0%, transparent 70%);
+  top: -80px; right: -150px;
+  pointer-events: none;
+}
+
+.lp-fv2-header {
+  margin-bottom: 56px;
+}
+
+.lp-fv2-sub {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--lp-text-body);
+  max-width: 520px;
+  margin: 0;
+}
+
+/* Grid: 1 hero + 2 col × 3 row */
+.lp-fv2-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+/* Card base */
+.lp-fv2-card {
+  position: relative;
+  background: linear-gradient(
+    155deg,
+    rgba(255,255,255,0.038) 0%,
+    rgba(255,255,255,0.015) 100%
+  );
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 20px;
+  padding: 32px 30px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  cursor: default;
+}
+
+.lp-fv2-card:hover {
+  border-color: rgba(255,255,255,0.13);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+}
+
+/* Barra de cor no topo */
+.lp-fv2-card-bar {
+  position: absolute;
+  top: 0; left: 20px; right: 20px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--fc, #2563EB), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: 0 0 2px 2px;
+}
+
+.lp-fv2-card:hover .lp-fv2-card-bar { opacity: 1; }
+
+/* Card hero — ocupa largura toda */
+.lp-fv2-card--hero {
+  grid-column: 1 / -1;
+  padding: 36px 40px;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.05) 0%,
+    rgba(255,255,255,0.02) 100%
+  );
+}
+
+.lp-fv2-hero-inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: start;
+}
+
+.lp-fv2-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lp-fv2-hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 240px;
+  justify-content: center;
+  padding-top: 32px;
+}
+
+/* Número de feature */
+.lp-fv2-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.18);
+  margin-bottom: 4px;
+}
+
+/* Ícone */
+.lp-fv2-icon {
+  width: 50px; height: 50px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.lp-fv2-card:hover .lp-fv2-icon {
+  transform: scale(1.08);
+  box-shadow: 0 0 24px var(--fc-bg, rgba(37,99,235,0.2));
+}
+
+/* Título */
+.lp-fv2-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--lp-text-white);
+  letter-spacing: -0.015em;
+  margin: 0;
+  line-height: 1.25;
+}
+
+/* Descrição */
+.lp-fv2-desc {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--lp-text-body);
+  margin: 0;
+}
+
+.lp-fv2-desc--muted {
+  color: var(--lp-text-muted);
+}
+
+/* Pills no card hero */
+.lp-fv2-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.75);
+  transition: background 0.2s;
+}
+
+.lp-fv2-pill span { font-weight: 800; font-size: 14px; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .lp-fv2-grid { grid-template-columns: repeat(2, 1fr); }
+  .lp-fv2-card--hero { grid-column: 1 / -1; }
+  .lp-fv2-hero-inner { grid-template-columns: 1fr; gap: 24px; }
+  .lp-fv2-hero-right { min-width: auto; padding-top: 0; }
+}
+
+@media (max-width: 580px) {
+  .lp-fv2-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   PROBLEMAS — Cards com tag + fix indicator
+   ============================================================ */
+
+.lp-problems {
+  padding: 120px 0;
+  background: var(--lp-bg);
+  border-top: 1px solid var(--lp-border);
+  position: relative;
+}
+
+.lp-problems-header {
+  margin-bottom: 56px;
+}
+
+.lp-problems-sub {
+  font-size: 16px;
+  color: var(--lp-text-body);
+  margin: 0;
+  max-width: 440px;
+}
+
+.lp-problems-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+/* Card problema */
+.lp-prob-card {
+  position: relative;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.065);
+  border-radius: 18px;
+  padding: 28px 26px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  cursor: default;
+}
+
+.lp-prob-card:hover {
+  border-color: color-mix(in srgb, var(--pc, #2563eb) 25%, transparent);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45), 0 0 30px color-mix(in srgb, var(--pc, #2563eb) 8%, transparent);
+}
+
+/* Acento lateral esquerdo */
+.lp-prob-accent {
+  position: absolute;
+  left: 0; top: 24px; bottom: 24px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--pc, #2563eb);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.lp-prob-card:hover .lp-prob-accent { opacity: 1; }
+
+/* Topo: tag + emoji */
+.lp-prob-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lp-prob-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid;
+}
+
+.lp-prob-emoji {
+  font-size: 26px;
+  line-height: 1;
+  filter: grayscale(0.2);
+  transition: transform 0.3s;
+}
+
+.lp-prob-card:hover .lp-prob-emoji { transform: scale(1.15) rotate(-3deg); }
+
+/* Título */
+.lp-prob-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--lp-text-white);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  margin: 0;
+}
+
+/* Descrição */
+.lp-prob-desc {
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: var(--lp-text-body);
+  margin: 0;
+  flex: 1;
+}
+
+/* Fix indicator */
+.lp-prob-fix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin-top: auto;
+}
+
+.lp-prob-fix-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.lp-prob-fix-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.50);
+  transition: color 0.2s;
+}
+
+.lp-prob-card:hover .lp-prob-fix-text { color: rgba(255,255,255,0.80); }
+
+@media (max-width: 900px) {
+  .lp-problems-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 580px) {
+  .lp-problems-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   FAQ V2 — Two-column layout com tipografia grande
+   ============================================================ */
+
+.lp-faq-v2 {
+  padding: 120px 0;
+  background: var(--lp-bg-2);
+  border-top: 1px solid var(--lp-border);
+}
+
+.lp-faq-v2-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 80px;
+  align-items: start;
+}
+
+.lp-faq-v2-header {
+  position: sticky;
+  top: 100px;
+}
+
+.lp-faq-v2-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Row */
+.lp-faq-v2-row {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: border-color 0.2s;
+}
+
+.lp-faq-v2-row--open {
+  border-color: rgba(255,255,255,0.10);
+}
+
+.lp-faq-v2-row:first-child {
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Botão */
+.lp-faq-v2-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 28px 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.lp-faq-v2-btn:hover .lp-faq-v2-q { color: var(--lp-text-white); }
+
+/* Número */
+.lp-faq-v2-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.18);
+  flex-shrink: 0;
+  min-width: 28px;
+  transition: color 0.2s;
+}
+
+.lp-faq-v2-row--open .lp-faq-v2-num { color: var(--lp-primary-bright); }
+
+/* Pergunta */
+.lp-faq-v2-q {
+  font-size: 17px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.72);
+  flex: 1;
+  line-height: 1.4;
+  transition: color 0.2s;
+}
+
+.lp-faq-v2-row--open .lp-faq-v2-q { color: var(--lp-text-white); }
+
+/* Ícone seta */
+.lp-faq-v2-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.30);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.lp-faq-v2-icon.open {
+  border-color: var(--lp-primary);
+  color: var(--lp-primary-bright);
+  background: rgba(37,99,235,0.10);
+  transform: rotate(90deg);
+}
+
+/* Resposta */
+.lp-faq-v2-ans {
+  font-size: 15px;
+  line-height: 1.85;
+  color: var(--lp-text-body);
+  padding: 0 0 28px 48px;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .lp-faq-v2-inner {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .lp-faq-v2-header { position: static; }
+}
+
+@media (max-width: 580px) {
+  .lp-faq-v2-ans { padding-left: 0; }
+  .lp-faq-v2-btn { padding: 22px 0; }
+  .lp-faq-v2-q { font-size: 15px; }
+}

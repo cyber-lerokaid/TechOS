@@ -444,61 +444,93 @@ const LandingPage = () => {
       </section>
 
       {/* ── 2.4 FEATURES ── */}
-      <section id="features" className="lp-features py-24 relative z-10">
+      <section id="features" className="lp-features-v2">
         <div className="lp-section-inner">
-          <motion.div 
-            className="lp-features-header mb-16 text-center"
+          {/* Header */}
+          <motion.div
+            className="lp-fv2-header"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
             <span className="lp-section-eyebrow">Operação</span>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6 mt-4">
+            <h2 className="lp-section-title">
               Não é um sistema.<br />
               <span className="lp-accent-text">É sua operação rodando.</span>
             </h2>
-            <p className="text-white/60 text-lg max-w-2xl mx-auto">
-              Do atendimento ao financeiro — tudo pensado para eliminar atrito na operação.
+            <p className="lp-fv2-sub">
+              Do atendimento ao financeiro — cada feature foi desenhada para eliminar
+              um ponto de atrito real na bancada.
             </p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {features.map((f, i) => (
+
+          {/* Cards grid - assimétrico */}
+          <div className="lp-fv2-grid">
+            {/* Card destaque — ocupa linha inteira */}
+            {(() => {
+              const HeroIcon = features[0].icon;
+              return (
+                <motion.div
+                  className="lp-fv2-card lp-fv2-card--hero group"
+                  style={{'--fc': features[0].color, '--fc-bg': features[0].colorMuted} as React.CSSProperties}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.5 }}
+                  whileHover={{ y: -4 }}
+                >
+                  <div className="lp-fv2-card-bar" />
+                  <div className="lp-fv2-hero-inner">
+                    <div className="lp-fv2-hero-left">
+                      <span className="lp-fv2-num">01</span>
+                      <div className="lp-fv2-icon" style={{color: features[0].color, background: features[0].colorMuted}}>
+                        <HeroIcon size={28} strokeWidth={2} />
+                      </div>
+                      <h3 className="lp-fv2-title">{features[0].title}</h3>
+                      <p className="lp-fv2-desc">{features[0].desc[0]}</p>
+                      {features[0].desc.slice(1).map((p, i) => (
+                        <p key={i} className="lp-fv2-desc lp-fv2-desc--muted">{p}</p>
+                      ))}
+                    </div>
+                    <div className="lp-fv2-hero-right">
+                      <div className="lp-fv2-pill" style={{background: features[0].colorMuted, borderColor: features[0].color + '40'}}>
+                        <span style={{color: features[0].color}}>✓</span> Sem conflito com cliente
+                      </div>
+                      <div className="lp-fv2-pill" style={{background: features[0].colorMuted, borderColor: features[0].color + '40'}}>
+                        <span style={{color: features[0].color}}>✓</span> Assinatura digital no balcão
+                      </div>
+                      <div className="lp-fv2-pill" style={{background: features[0].colorMuted, borderColor: features[0].color + '40'}}>
+                        <span style={{color: features[0].color}}>✓</span> Fotos + checklist vinculados
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })()}
+
+            {/* 5 cards menores */}
+            {features.slice(1).map((f, i) => (
               <motion.div
                 key={i}
-                className={`${surfaceLevel2} flex flex-col group h-full justify-between !p-8`}
-                style={{'--f-color': f.color, '--f-color-bg': f.colorMuted} as React.CSSProperties}
-                initial={{ opacity: 0, y: 20 }}
+                className="lp-fv2-card group"
+                style={{'--fc': f.color, '--fc-bg': f.colorMuted} as React.CSSProperties}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ type: "spring", stiffness: 130, damping: 18, delay: i * 0.1 }}
-                whileHover={{ y: -6, scale: 1.02 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+                whileHover={{ y: -5 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none" />
-                <div className="absolute inset-0 bg-white/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                <div className="absolute inset-0 border border-transparent group-hover:border-white/10 transition-colors duration-300 rounded-2xl pointer-events-none" />
-                <div className="absolute inset-0 shadow-[0_0_30px_transparent] group-hover:shadow-[0_0_40px_var(--f-color-bg)] transition-shadow duration-300 rounded-2xl pointer-events-none" />
-                
-                <div className="relative z-10 flex flex-col h-full">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.05] flex items-center justify-center mb-6 border border-white/5 shadow-inner" style={{color: f.color}}>
-                    <f.icon size={24} strokeWidth={2.5} />
-                  </div>
-                  
-                  <h3 className="text-xl font-bold text-white mb-4 tracking-wide transition-colors">
-                    {f.title}
-                  </h3>
-                  
-                  <div className="flex flex-col gap-3 text-sm flex-1">
-                    {f.desc.map((paragraph, pIdx) => (
-                      <p 
-                        key={pIdx} 
-                        className={`${pIdx === 0 ? 'text-white/90 font-medium' : 'text-white/60'} leading-relaxed`}
-                      >
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
+                <div className="lp-fv2-card-bar" />
+                <span className="lp-fv2-num">{String(i + 2).padStart(2, '0')}</span>
+                <div className="lp-fv2-icon" style={{color: f.color, background: f.colorMuted}}>
+                  <f.icon size={22} strokeWidth={2} />
                 </div>
+                <h3 className="lp-fv2-title">{f.title}</h3>
+                <p className="lp-fv2-desc">{f.desc[0]}</p>
+                {f.desc.slice(1).map((p, pi) => (
+                  <p key={pi} className="lp-fv2-desc lp-fv2-desc--muted">{p}</p>
+                ))}
               </motion.div>
             ))}
           </div>
@@ -588,60 +620,98 @@ const LandingPage = () => {
       </section>
 
       {/* 🔹 2.6 PROBLEMAS QUE RESOLVEMOS 🔹 */}
-      <section className="lp-testimonials">
+      <section className="lp-problems">
         <div className="lp-section-inner">
-          <div className="lp-testimonials-header text-center mb-16">
-            <span className="block text-blue-400 text-sm font-bold uppercase tracking-widest mb-4">Problemas que resolvemos</span>
-            <h2 className="text-4xl font-extrabold text-white tracking-wide">
-              Se você vive isso, o TechOS é para você.
+          <motion.div
+            className="lp-problems-header"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="lp-section-eyebrow">Problemas que resolvemos</span>
+            <h2 className="lp-section-title">
+              Reconhece algum<br />desses cenários?
             </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p className="lp-problems-sub">
+              Se você vive qualquer um desses, o TechOS foi feito pra você.
+            </p>
+          </motion.div>
+
+          <div className="lp-problems-grid">
             {[
-              { 
-                title: 'Clientes perguntando o tempo todo', 
-                desc: 'Você para o que está fazendo várias vezes por dia só pra responder "já ficou pronto?". Isso quebra seu foco, atrasa o serviço e ainda te deixa estressado.',
-                icon: '💬'
+              {
+                icon: '💬',
+                color: '#22C55E',
+                tag: 'Comunicação',
+                title: 'Cliente ligando o tempo todo',
+                desc: 'Você para o que está fazendo várias vezes por dia só pra responder "já ficou pronto?". Isso quebra seu foco, atrasa a fila e te deixa esgotado.',
+                fix: 'WhatsApp automático em cada etapa'
               },
-              { 
-                title: 'Falta de controle financeiro', 
-                desc: 'Entra dinheiro na gaveta, sai dinheiro pra peça, e no fim do mês você não sabe se a assistência deu lucro ou apenas pagou as contas.',
-                icon: '💸'
+              {
+                icon: '💸',
+                color: '#F59E0B',
+                tag: 'Financeiro',
+                title: 'Dinheiro entrando sem controle',
+                desc: 'Entra pela gaveta, sai pra peça, e no fim do mês você não sabe se teve lucro — ou só pagou as contas mais o seu próprio salário.',
+                fix: 'Financeiro calculado automaticamente'
               },
-              { 
-                title: 'Ordens de serviço de papel perdidas', 
-                desc: 'Aquele bloco de papel que rasga, some, ou a letra fica ilegível. Quando o cliente volta pra buscar o aparelho, vira um desespero pra encontrar o registro.',
-                icon: '📄'
+              {
+                icon: '📄',
+                color: '#0EA5E9',
+                tag: 'Registro',
+                title: 'OS de papel sumindo',
+                desc: 'O bloco rasga, some ou a letra fica ilegível. Quando o cliente volta, vira caça ao tesouro encontrar o registro.',
+                fix: 'Tudo digital, buscável e organizado'
               },
-              { 
-                title: 'Esquecer de avisar sobre orçamentos', 
-                desc: 'O aparelho tá na bancada esperando aprovação, mas você esqueceu de mandar mensagem. Resultado: equipamento parado ocupando espaço e dinheiro que não entra.',
-                icon: '⏰'
+              {
+                icon: '⏰',
+                color: '#EC4899',
+                tag: 'Orçamento',
+                title: 'Aparelho parado sem aprovação',
+                desc: 'O equipamento tá na bancada esperando aprovação, mas você esqueceu de mandar mensagem. Espaço ocupado, dinheiro parado.',
+                fix: 'Notificação automática ao cliente'
               },
-              { 
-                title: 'Desorganização no estoque de peças', 
-                desc: 'Você acha que tem a peça, desmonta o aparelho do cliente e descobre que não tem. Precisa pedir às pressas, pagando mais caro no motoboy.',
-                icon: '📦'
+              {
+                icon: '📦',
+                color: '#8B5CF6',
+                tag: 'Estoque',
+                title: 'Peça que sumiu do nada',
+                desc: 'Você acha que tem a peça, desmonta o aparelho do cliente e descobre que não tem. Pedido às pressas, motoboy caro, cliente esperando.',
+                fix: 'Estoque em tempo real com alertas'
               },
-              { 
-                title: 'Dores de cabeça com garantias falsas', 
-                desc: 'O cliente volta reclamando de um arranhão que já estava lá, mas você não tem como provar porque não fez um check-in fotográfico antes do conserto.',
-                icon: '🤦‍♂️'
+              {
+                icon: '🛡️',
+                color: '#06B6D4',
+                tag: 'Garantia',
+                title: 'Arranhão que já estava lá',
+                desc: 'O cliente volta reclamando de um dano pré-existente e você não tem como provar. Sem evidência, você perde a discussão.',
+                fix: 'Check-in fotográfico + assinatura digital'
               },
             ].map((p, i) => (
-              <motion.div 
-                key={i} 
-                className={`${surfaceLevel1} !p-8`}
+              <motion.div
+                key={i}
+                className="lp-prob-card group"
+                style={{'--pc': p.color} as React.CSSProperties}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.45, delay: i * 0.07 }}
                 whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 130, damping: 20 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none" />
-                <div className="absolute inset-0 bg-white/[0.04] opacity-0 hover:opacity-100 transition-opacity duration-400 pointer-events-none" />
-                
-                <div className="text-4xl mb-6 relative z-10">{p.icon}</div>
-                <h3 className="text-xl font-bold text-white mb-4 relative z-10 leading-tight">{p.title}</h3>
-                <p className="text-white/60 leading-relaxed relative z-10 text-sm">{p.desc}</p>
-                
+                <div className="lp-prob-accent" />
+                <div className="lp-prob-top">
+                  <span className="lp-prob-tag" style={{color: p.color, background: p.color + '18', borderColor: p.color + '30'}}>
+                    {p.tag}
+                  </span>
+                  <span className="lp-prob-emoji">{p.icon}</span>
+                </div>
+                <h3 className="lp-prob-title">{p.title}</h3>
+                <p className="lp-prob-desc">{p.desc}</p>
+                <div className="lp-prob-fix">
+                  <span className="lp-prob-fix-dot" style={{background: p.color}} />
+                  <span className="lp-prob-fix-text">{p.fix}</span>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -649,40 +719,51 @@ const LandingPage = () => {
       </section>
 
       {/* ── 2.7 FAQ ── */}
-      <section id="faq" className="lp-faq">
-        <div className="lp-faq-inner max-w-3xl mx-auto px-6 py-20">
-          <div className="lp-faq-header mb-16">
-            <span className="block text-center text-blue-400 text-sm font-bold uppercase tracking-widest mb-4">FAQ</span>
-            <h2 className="text-center text-4xl font-extrabold text-white tracking-wide">
-              Perguntas frequentes
-            </h2>
-          </div>
-          <div className="flex flex-col gap-4">
+      <section id="faq" className="lp-faq-v2">
+        <div className="lp-faq-v2-inner">
+          <motion.div
+            className="lp-faq-v2-header"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="lp-section-eyebrow">FAQ</span>
+            <h2 className="lp-section-title">Perguntas<br />frequentes</h2>
+          </motion.div>
+
+          <div className="lp-faq-v2-list">
             {faqs.map((faq, i) => (
-              <motion.div 
-                key={i} 
-                className={`${surfaceLevel1} !p-6 !bg-white/[0.015]`}
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 130, damping: 18 }}
+              <motion.div
+                key={i}
+                className={`lp-faq-v2-row ${openFaq === i ? 'lp-faq-v2-row--open' : ''}`}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none" />
-                <div className="absolute inset-0 bg-white/[0.04] opacity-0 hover:opacity-100 transition-opacity duration-400 pointer-events-none" />
-                <button 
-                  className="w-full text-left p-6 flex justify-between items-center relative z-10 text-white font-medium"
+                <button
+                  className="lp-faq-v2-btn"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                 >
-                  <span>{faq.q}</span>
-                  <span className={`text-blue-400 text-xl transition-transform duration-300 ${openFaq === i ? 'rotate-45' : ''}`}>+</span>
+                  <span className="lp-faq-v2-num">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="lp-faq-v2-q">{faq.q}</span>
+                  <span className={`lp-faq-v2-icon ${openFaq === i ? 'open' : ''}`}>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </span>
                 </button>
                 <AnimatePresence>
                   {openFaq === i && (
-                    <motion.div 
+                    <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden relative z-10"
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      className="overflow-hidden"
                     >
-                      <p className="px-6 pb-6 text-white/60 leading-relaxed text-sm">{faq.a}</p>
+                      <p className="lp-faq-v2-ans">{faq.a}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -743,9 +824,9 @@ const LandingPage = () => {
             © {new Date().getFullYear()} TECHOS. Todos os direitos reservados.
           </div>
           <div className="flex gap-6 text-sm text-white/50">
-            <a href="#" className="hover:text-white transition-colors">Termos de Uso</a>
-            <a href="#" className="hover:text-white transition-colors">Privacidade</a>
-            <a href="#" className="hover:text-white transition-colors">Contato</a>
+            <Link to="/termos" className="hover:text-white transition-colors">Termos de Uso</Link>
+            <Link to="/privacidade" className="hover:text-white transition-colors">Privacidade</Link>
+            <Link to="/contato" className="hover:text-white transition-colors">Contato</Link>
           </div>
         </div>
       </footer>

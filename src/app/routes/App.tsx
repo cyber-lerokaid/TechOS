@@ -14,6 +14,9 @@ import InventoryPage from '@/pages/InventoryPage';
 import FinancialPage from '@/pages/FinancialPage';
 import SettingsPage from '@/pages/SettingsPage';
 import HistoricoPage from '@/pages/HistoricoPage';
+import TermosPage from '@/pages/TermosPage';
+import PrivacidadePage from '@/pages/PrivacidadePage';
+import ContatoPage from '@/pages/ContatoPage';
 import { PageTransition } from '@/components/ui/PageTransition';
 
 const AnimatedRoutes = () => {
@@ -36,6 +39,11 @@ const AnimatedRoutes = () => {
         
         <Route path="/os/:osNumber" element={<PageTransition><PublicOSLink /></PageTransition>} />
         <Route path="/checkin" element={<ProtectedRoute><PageTransition><CheckinWizard /></PageTransition></ProtectedRoute>} />
+
+        {/* Páginas institucionais */}
+        <Route path="/termos" element={<PageTransition><TermosPage /></PageTransition>} />
+        <Route path="/privacidade" element={<PageTransition><PrivacidadePage /></PageTransition>} />
+        <Route path="/contato" element={<PageTransition><ContatoPage /></PageTransition>} />
       </Routes>
     </AnimatePresence>
   );
