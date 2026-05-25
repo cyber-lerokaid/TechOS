@@ -3,10 +3,10 @@ import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { STATUS_CONFIG, formatBRL } from '@/data/mock-data';
 import { Search, Filter, FileText, Clock } from 'lucide-react';
 import { Avatar } from '@/components/ui/Avatar';
-import { useAuth } from '@/app/providers/AuthContext';
 import { OsDrawer } from '@/features/dashboard/OsDrawer';
 import KanbanBoard from '@/features/dashboard/KanbanBoard';
-import { fetchOrdensServico } from '@/lib/services/osService';
+import { useOrderList } from '@/shared/lib/hooks/orders/useOrderList';
+import { useUpdateOrderStatus } from '@/shared/lib/hooks/orders/useUpdateOrderStatus';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -16,7 +16,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 
 const ServiceOrdersPage = () => {
-  const { isDemoMode } = useAuth();
+  
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
@@ -26,16 +26,21 @@ const ServiceOrdersPage = () => {
     if (s !== null) setSearchTerm(s);
   }, [searchParams]);
   const [selectedOsId, setSelectedOsId] = useState<string | null>(null);
-  const [baseOrders, setBaseOrders] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: remoteOrders, isLoading: isOrdersLoading } = useOrderList();
+  const updateStatusMutation = useUpdateOrderStatus();
+  const baseOrders = remoteOrders || [];
+  const isLoading = isOrdersLoading;
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [viewMode, setViewMode] = useState<'lista' | 'kanban'>('lista');
 
-  const handleMarkEntregue = (_osId: string) => {
-    // mock action
-    window.dispatchEvent(new CustomEvent('showToast', { detail: { message: 'OS marcada como Entregue', type: 'success' } }));
-    // trigger refresh if we had a real backend call
+  const handleMarkEntregue = async (osId: string) => {
+    try {
+      await updateStatusMutation.mutateAsync({ id: osId, status: 'entregue' });
+      window.dispatchEvent(new CustomEvent('showToast', { detail: { message: 'OS marcada como Entregue', type: 'success' } }));
+    } catch(err: any) {
+      window.dispatchEvent(new CustomEvent('showToast', { detail: { message: err.message || 'Erro', type: 'error' } }));
+    }
   };
 
   const setOsForQuote = (_os: any) => {
@@ -43,44 +48,23 @@ const ServiceOrdersPage = () => {
     window.dispatchEvent(new CustomEvent('showToast', { detail: { message: 'Iniciando orçamento', type: 'info' } }));
   };
 
-  useEffect(() => {
-    const loadOrders = async () => {
-      setIsLoading(true);
-      try {
-        const data = await fetchOrdensServico(isDemoMode);
-        setBaseOrders(data || []);
-      } catch (error) {
-        if (import.meta.env.DEV) console.error("Erro ao buscar ordens de serviço:", error);
-        setBaseOrders([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadOrders();
-    window.addEventListener('osUpdated', loadOrders);
-    window.addEventListener('demoDataGenerated', loadOrders);
-    return () => {
-      window.removeEventListener('osUpdated', loadOrders);
-      window.removeEventListener('demoDataGenerated', loadOrders);
-    };
-  }, [isDemoMode]);
+  
 
   const filteredOrders = baseOrders.filter(os => {
-    const matchSearch = os.numero_os.includes(searchTerm) || 
-      os.customer_nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      os.device_label.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchSearch = os.numeroOs.includes(searchTerm) || 
+      os.customerNome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      os.deviceLabel.toLowerCase().includes(searchTerm.toLowerCase());
     const matchStatus = statusFilter.length === 0 || statusFilter.includes(os.status);
     return matchSearch && matchStatus;
   });
 
   const osHoje = baseOrders.filter(os => {
-    const d = new Date(os.criado_em);
+    const d = new Date(os.criadoEm);
     const hoje = new Date();
     return d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth();
   });
   const osAtrasadas = baseOrders.filter(os => {
-    const horas = (Date.now() - new Date(os.atualizado_em).getTime()) / 3600000;
+    const horas = (Date.now() - new Date(os.atualizadoEm).getTime()) / 3600000;
     return horas > 48 && !['entregue', 'orcamento_recusado'].includes(os.status);
   });
   const osPendentesOrcamento = baseOrders.filter(os => os.status === 'orcamento_enviado');
@@ -245,16 +229,16 @@ const ServiceOrdersPage = () => {
                         onClick={() => setSelectedOsId(os.id)}
                       >
                         <TableCell className="font-semibold-plus text-muted-foreground group-hover:text-foreground transition-colors duration-300">
-                          #{os.numero_os}
+                          #{os.numeroOs}
                         </TableCell>
                         <TableCell className="font-semibold-plus text-foreground">
-                          {os.customer_nome}
+                          {os.customerNome}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {os.device_label}
+                          {os.deviceLabel}
                         </TableCell>
                         <TableCell className="font-semibold text-foreground">
-                          {os.valor_mao_obra || os.valor_pecas ? formatBRL((os.valor_mao_obra || 0) + (os.valor_pecas || 0)) : '-'}
+                          {os.valorMaoObra || os.valorPecas ? formatBRL((os.valorMaoObra || 0) + (os.valorPecas || 0)) : '-'}
                         </TableCell>
                         <TableCell>
                           <div 
@@ -270,13 +254,13 @@ const ServiceOrdersPage = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Avatar name={os.technician_nome} className="w-6 h-6 text-[10px]" />
-                            <span className="text-muted-foreground text-xs font-medium">{os.technician_nome.split(' ')[0]}</span>
+                            <Avatar name={os.technicianNome} className="w-6 h-6 text-[10px]" />
+                            <span className="text-muted-foreground text-xs font-medium">{os.technicianNome.split(' ')[0]}</span>
                           </div>
                         </TableCell>
                         <TableCell>
                           {(() => {
-                            const horas = Math.floor((Date.now() - new Date(os.atualizado_em).getTime()) / 3600000);
+                            const horas = Math.floor((Date.now() - new Date(os.atualizadoEm).getTime()) / 3600000);
                             const color = horas > 48 ? 'rgba(239,68,68,0.8)' : horas > 24 ? 'rgba(245,158,11,0.8)' : 'rgba(34,197,94,0.7)';
                             return (
                               <span style={{ fontSize: 12, fontWeight: 600, color, display: 'flex', alignItems: 'center', gap: 4 }}>

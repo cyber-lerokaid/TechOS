@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BarChart2, Download, DollarSign, ArrowUpRight, ArrowDownRight, Search, FileText, PieChart as PieChartIcon } from 'lucide-react';
 import { useAuth } from '@/app/providers/AuthContext';
-import { formatBRL, type ServiceOrder, STATUS_CONFIG } from '@/data/mock-data';
+import { formatBRL, STATUS_CONFIG } from '@/data/mock-data';
 import { Toast, type ToastType } from '@/components/ui/Toast';
 import { Badge } from '@/components/ui/Badge';
 import { calcularFinanceiro, getTransacoesPorPeriodo } from '@/lib/financialCalc';
-import { fetchOrdensServico } from '@/lib/services/osService';
+import { useOrderList } from '@/shared/lib/hooks/orders/useOrderList';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -20,44 +20,30 @@ const FinancialPage = () => {
   const [period, setPeriod] = useState('30d');
   const [toastConfig, setToastConfig] = useState<{ message: string, type: ToastType, visible: boolean }>({ message: '', type: 'info', visible: false });
   const [searchTerm, setSearchTerm] = useState('');
-  const [orders, setOrders] = useState<ServiceOrder[]>([]);
+  const { data: orders = [] } = useOrderList();
   const [showDRE, setShowDRE] = useState(false);
-
-  useEffect(() => {
-    const loadOrders = async () => {
-      const data = await fetchOrdensServico(isDemoMode);
-      setOrders(data || []);
-    };
-    loadOrders();
-    window.addEventListener('osUpdated', loadOrders);
-    window.addEventListener('demoDataGenerated', loadOrders);
-    return () => {
-      window.removeEventListener('osUpdated', loadOrders);
-      window.removeEventListener('demoDataGenerated', loadOrders);
-    };
-  }, [isDemoMode]);
 
   const summary = calcularFinanceiro(orders, period, isDemoMode);
   const transacoes = getTransacoesPorPeriodo(orders, period, isDemoMode);
 
   const filteredOrders = transacoes.filter(os => 
-    os.numero_os.includes(searchTerm) || 
-    os.customer_nome.toLowerCase().includes(searchTerm.toLowerCase())
+    os.numeroOs.includes(searchTerm) || 
+    os.customerNome.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleExport = () => {
     const headers = ['Data', 'OS', 'Cliente', 'Aparelho', 'Status', 'Mão de Obra', 'Peças', 'Total'];
     const rows = filteredOrders.map(os => {
       const statusLabel = STATUS_CONFIG[os.status as keyof typeof STATUS_CONFIG]?.label || os.status;
-      const total = (os.valor_mao_obra || 0) + (os.valor_pecas || 0);
+      const total = (os.valorMaoObra || 0) + (os.valorPecas || 0);
       return [
-        new Date(os.atualizado_em).toLocaleDateString(),
-        os.numero_os,
-        `"${os.customer_nome}"`,
-        `"${os.device_label}"`,
+        new Date(os.atualizadoEm).toLocaleDateString(),
+        os.numeroOs,
+        `"${os.customerNome}"`,
+        `"${os.deviceLabel}"`,
         statusLabel,
-        os.valor_mao_obra || 0,
-        os.valor_pecas || 0,
+        os.valorMaoObra || 0,
+        os.valorPecas || 0,
         total
       ];
     });
@@ -73,12 +59,12 @@ const FinancialPage = () => {
   const chartData = transacoes.reduce((acc, os) => {
     // deduce type from device_label for mock purposes or use device_tipo if exists
     let tipo = 'Outro';
-    const label = os.device_label.toLowerCase();
+    const label = os.deviceLabel.toLowerCase();
     if (label.includes('iphone') || label.includes('samsung') || label.includes('motorola')) tipo = 'Celular';
     else if (label.includes('macbook') || label.includes('notebook') || label.includes('dell')) tipo = 'Notebook';
     else if (label.includes('pc') || label.includes('desktop')) tipo = 'Desktop';
 
-    const valor = (os.valor_mao_obra || 0) + (os.valor_pecas || 0);
+    const valor = (os.valorMaoObra || 0) + (os.valorPecas || 0);
     const existing = acc.find(item => item.name === tipo);
     if (existing) {
       existing.value += valor;
@@ -244,14 +230,14 @@ const FinancialPage = () => {
                     </TableHeader>
                     <TableBody>
                       {filteredOrders.map((os, i) => {
-                        const valorTotal = (os.valor_mao_obra || 0) + (os.valor_pecas || 0);
+                        const valorTotal = (os.valorMaoObra || 0) + (os.valorPecas || 0);
                         return (
                           <TableRow key={i} className="cursor-pointer group">
                             <TableCell className="text-muted-foreground font-medium">
-                              {new Date(os.atualizado_em).toLocaleDateString()}
+                              {new Date(os.atualizadoEm).toLocaleDateString()}
                             </TableCell>
                             <TableCell className="font-semibold text-foreground">
-                              OS #{os.numero_os} - {os.customer_nome}
+                              OS #{os.numeroOs} - {os.customerNome}
                             </TableCell>
                             <TableCell>
                               <Badge variant="success">

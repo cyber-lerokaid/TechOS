@@ -110,13 +110,11 @@ const gerarClienteFake = (): DemoScenario => {
     criado_em: createdAt,
   };
 
-  const os: ServiceOrder = {
+  const os: any = {
     id: osId,
-    tenant_id: 'demo-tenant',
+    tenant_id: 'tenant_001',
     customer_id: customerId,
-    customer_nome: nome,
-    customer_telefone: telefone,
-    device_id: faker.string.uuid(),
+    device_id: `dev_${Date.now()}`,
     device_label: dispositivo.label,
     device_tipo: dispositivo.tipo,
     technician_id: faker.helpers.arrayElement(['user_001', 'user_002']),

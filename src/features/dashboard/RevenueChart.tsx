@@ -1,27 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatBRL } from '@/data/mock-data';
 import { useAuth } from '@/app/providers/AuthContext';
 import { Card, CardContent } from '@/components/ui/Card';
-import { fetchOrdensServico } from '@/lib/services/osService';
+import { useOrderList } from '@/shared/lib/hooks/orders/useOrderList';
 import { calcularGraficoFaturamento } from '@/lib/financialCalc';
-import type { ServiceOrder } from '@/data/mock-data';
 
 const RevenueChart = () => {
   const { isDemoMode } = useAuth();
   const [period, setPeriod] = useState<'semana' | 'mes'>('semana');
-  const [orders, setOrders] = useState<ServiceOrder[]>([]);
-
-  useEffect(() => {
-    fetchOrdensServico(isDemoMode).then(setOrders);
-    const reload = () => fetchOrdensServico(isDemoMode).then(setOrders);
-    window.addEventListener('osUpdated', reload);
-    window.addEventListener('demoDataGenerated', reload);
-    return () => {
-      window.removeEventListener('osUpdated', reload);
-      window.removeEventListener('demoDataGenerated', reload);
-    };
-  }, [isDemoMode]);
+  const { data: orders = [] } = useOrderList();
 
   // Calcular dados reais para a semana ou mês
   const data = calcularGraficoFaturamento(orders, period, isDemoMode);

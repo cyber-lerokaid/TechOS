@@ -22,8 +22,8 @@ export const calcularFinanceiro = (
   // pois as datas dos mocks são antigas e não passam no filtro real
   if (isDemoMode && orders.length > 0) {
     const closedOrders = orders.filter(os => ['pronto', 'entregue'].includes(os.status));
-    const receita_servicos = closedOrders.reduce((acc, os) => acc + (os.valor_mao_obra || 0), 0);
-    const receita_pecas = closedOrders.reduce((acc, os) => acc + (os.valor_pecas || 0), 0);
+    const receita_servicos = closedOrders.reduce((acc, os) => acc + (os.valorMaoObra || 0), 0);
+    const receita_pecas = closedOrders.reduce((acc, os) => acc + (os.valorPecas || 0), 0);
     const receita_total = receita_servicos + receita_pecas;
     const custo_pecas = receita_pecas * 0.60;
     return {
@@ -53,16 +53,16 @@ export const calcularFinanceiro = (
   const prevCutoff = new Date(cutoff.getTime() - days * 24 * 3600000);
   const closedStatuses = ['pronto', 'entregue'];
   const currentOrders = orders.filter(os =>
-    closedStatuses.includes(os.status) && new Date(os.atualizado_em) >= cutoff
+    closedStatuses.includes(os.status) && new Date(os.atualizadoEm) >= cutoff
   );
   const prevOrders = orders.filter(os =>
     closedStatuses.includes(os.status) &&
-    new Date(os.atualizado_em) >= prevCutoff &&
-    new Date(os.atualizado_em) < cutoff
+    new Date(os.atualizadoEm) >= prevCutoff &&
+    new Date(os.atualizadoEm) < cutoff
   );
   const sumRevenue = (list: ServiceOrder[]) => ({
-    servicos: list.reduce((acc, os) => acc + (os.valor_mao_obra || 0), 0),
-    pecas: list.reduce((acc, os) => acc + (os.valor_pecas || 0), 0),
+    servicos: list.reduce((acc, os) => acc + (os.valorMaoObra || 0), 0),
+    pecas: list.reduce((acc, os) => acc + (os.valorPecas || 0), 0),
   });
   const current = sumRevenue(currentOrders);
   const prev = sumRevenue(prevOrders);
@@ -121,13 +121,13 @@ export const calcularGraficoFaturamento = (
       const diaFim = new Date(dia); diaFim.setHours(23, 59, 59, 999);
       const dayOrders = orders.filter(os =>
         closedStatuses.includes(os.status) &&
-        new Date(os.atualizado_em) >= diaInicio &&
-        new Date(os.atualizado_em) <= diaFim
+        new Date(os.atualizadoEm) >= diaInicio &&
+        new Date(os.atualizadoEm) <= diaFim
       );
       return {
         name: diaStr,
-        Serviços: dayOrders.reduce((acc, os) => acc + (os.valor_mao_obra || 0), 0),
-        Produtos: dayOrders.reduce((acc, os) => acc + (os.valor_pecas || 0), 0),
+        Serviços: dayOrders.reduce((acc, os) => acc + (os.valorMaoObra || 0), 0),
+        Produtos: dayOrders.reduce((acc, os) => acc + (os.valorPecas || 0), 0),
       };
     });
   } else {
@@ -138,13 +138,13 @@ export const calcularGraficoFaturamento = (
       semInicio.setHours(0, 0, 0, 0); semFim.setHours(23, 59, 59, 999);
       const semOrders = orders.filter(os =>
         closedStatuses.includes(os.status) &&
-        new Date(os.atualizado_em) >= semInicio &&
-        new Date(os.atualizado_em) <= semFim
+        new Date(os.atualizadoEm) >= semInicio &&
+        new Date(os.atualizadoEm) <= semFim
       );
       return {
         name: `Sem ${4 - i}`,
-        Serviços: semOrders.reduce((acc, os) => acc + (os.valor_mao_obra || 0), 0),
-        Produtos: semOrders.reduce((acc, os) => acc + (os.valor_pecas || 0), 0),
+        Serviços: semOrders.reduce((acc, os) => acc + (os.valorMaoObra || 0), 0),
+        Produtos: semOrders.reduce((acc, os) => acc + (os.valorPecas || 0), 0),
       };
     }).reverse();
   }
@@ -156,12 +156,12 @@ export const getTransacoesPorPeriodo = (orders: ServiceOrder[], period: string, 
     // Em demo, retornar todas as OS fechadas sem filtro de data
     return orders
       .filter(os => ['pronto', 'entregue'].includes(os.status))
-      .sort((a, b) => new Date(b.atualizado_em).getTime() - new Date(a.atualizado_em).getTime());
+      .sort((a, b) => new Date(b.atualizadoEm).getTime() - new Date(a.atualizadoEm).getTime());
   }
   const now = new Date();
   const days = period === 'Hoje' ? 1 : period === '7d' ? 7 : period === '15d' ? 15 : 30;
   const cutoff = new Date(now.getTime() - days * 24 * 3600000);
   return orders
-    .filter(os => ['pronto', 'entregue'].includes(os.status) && new Date(os.atualizado_em) >= cutoff)
-    .sort((a, b) => new Date(b.atualizado_em).getTime() - new Date(a.atualizado_em).getTime());
+    .filter(os => ['pronto', 'entregue'].includes(os.status) && new Date(os.atualizadoEm) >= cutoff)
+    .sort((a, b) => new Date(b.atualizadoEm).getTime() - new Date(a.atualizadoEm).getTime());
 };

@@ -4,7 +4,9 @@ import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Users, Plus, Search, Phone, Mail, X, MapPin, Loader2, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/app/providers/AuthContext';
-import { fetchDemoCustomers, fetchOrdensServico } from '@/lib/services/osService';
+import { fetchOrdensServico } from '@/lib/services/osService';
+import { useCustomerList } from '@/shared/lib/hooks/customers/useCustomerList';
+import { useCreateCustomer } from '@/shared/lib/hooks/customers/useCreateCustomer';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -24,10 +26,13 @@ const CustomersPage = () => {
   }, [searchParams]);
 
   const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: remoteCustomers, isLoading: isCustomersLoading } = useCustomerList();
+  const createCustomerMutation = useCreateCustomer();
+  const localCustomers = remoteCustomers || [];
 
-  const [localCustomers, setLocalCustomers] = useState<any[]>([]);
   const [allOrders, setAllOrders] = useState<any[]>([]);
+  const [isOsLoading, setIsOsLoading] = useState(true);
+  const isLoading = isCustomersLoading || isOsLoading;
   
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'recente' | 'valor' | 'nome'>('recente');
@@ -59,37 +64,21 @@ const CustomersPage = () => {
   };
 
   useEffect(() => {
-    setIsLoading(true);
+    setIsOsLoading(true);
     const load = async () => {
-      setLocalCustomers(isDemoMode ? fetchDemoCustomers() : []);
       const osData = await fetchOrdensServico(isDemoMode);
       setAllOrders(osData || []);
-      setIsLoading(false);
+      setIsOsLoading(false);
     };
     load();
-
-    const handleDemoGenerated = () => {
-      if (isDemoMode) {
-        setIsLoading(true);
-        setTimeout(async () => {
-          const updated = fetchDemoCustomers();
-          setLocalCustomers(updated);
-          const osData = await fetchOrdensServico(isDemoMode);
-          setAllOrders(osData || []);
-          setIsLoading(false);
-        }, 600);
-      }
-    };
-    window.addEventListener('demoDataGenerated', handleDemoGenerated);
-    return () => window.removeEventListener('demoDataGenerated', handleDemoGenerated);
   }, [isDemoMode]);
 
   const getSegmento = (customer: any) => {
-    if (customer.total_gasto >= 500) return { id: 'vip', label: 'VIP', color: '#FBBF24', bg: 'rgba(251,191,36,0.10)' };
-    if (customer.total_os >= 3) return { id: 'fiel', label: 'Fiel', color: '#34D399', bg: 'rgba(52,211,153,0.10)' };
-    if (customer.total_os === 0) return { id: 'novo', label: 'Novo', color: '#60A5FA', bg: 'rgba(96,165,250,0.10)' };
-    const mesesSemVisita = (Date.now() - new Date(customer.criado_em).getTime()) / (1000 * 60 * 60 * 24 * 30);
-    if (mesesSemVisita > 6 && customer.total_os > 0) return { id: 'inativo', label: 'Inativo', color: '#F87171', bg: 'rgba(248,113,113,0.10)' };
+    if (customer.totalGasto >= 500) return { id: 'vip', label: 'VIP', color: '#FBBF24', bg: 'rgba(251,191,36,0.10)' };
+    if (customer.totalOs >= 3) return { id: 'fiel', label: 'Fiel', color: '#34D399', bg: 'rgba(52,211,153,0.10)' };
+    if (customer.totalOs === 0) return { id: 'novo', label: 'Novo', color: '#60A5FA', bg: 'rgba(96,165,250,0.10)' };
+    const mesesSemVisita = (Date.now() - new Date(customer.criadoEm).getTime()) / (1000 * 60 * 60 * 24 * 30);
+    if (mesesSemVisita > 6 && customer.totalOs > 0) return { id: 'inativo', label: 'Inativo', color: '#F87171', bg: 'rgba(248,113,113,0.10)' };
     return { id: 'regular', label: 'Regular', color: '#A78BFA', bg: 'rgba(167,139,250,0.10)' };
   };
 
@@ -103,44 +92,44 @@ const CustomersPage = () => {
   });
 
   const sorted = [...filteredCustomers].sort((a, b) => {
-    if (sortBy === 'valor') return b.total_gasto - a.total_gasto;
+    if (sortBy === 'valor') return b.totalGasto - a.totalGasto;
     if (sortBy === 'nome') return a.nome.localeCompare(b.nome);
-    return new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime();
+    return new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime();
   });
 
-  const handleCreateCustomer = (e: React.FormEvent) => {
+  const handleCreateCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newCustomer = {
-      id: `cust_local_${Date.now()}`,
-      tenant_id: 'demo-tenant',
-      nome: newCustomerName,
-      telefone: newCustomerPhone,
-      email: newCustomerEmail || null,
-      total_gasto: 0,
-      total_os: 0,
-      criado_em: new Date().toISOString(),
-    };
-    setLocalCustomers(prev => [newCustomer, ...prev]);
-    setNewCustomerName(''); 
-    setNewCustomerPhone(''); 
-    setNewCustomerEmail('');
-    setCep('');
-    setEndereco('');
-    setIsNewCustomerModalOpen(false);
-    window.dispatchEvent(new CustomEvent('showToast', { 
-      detail: { message: 'Cliente cadastrado com sucesso!', type: 'success' } 
-    }));
+    try {
+      await createCustomerMutation.mutateAsync({
+        nome: newCustomerName,
+        telefone: newCustomerPhone,
+        email: newCustomerEmail || null,
+      });
+      setNewCustomerName(''); 
+      setNewCustomerPhone(''); 
+      setNewCustomerEmail('');
+      setCep('');
+      setEndereco('');
+      setIsNewCustomerModalOpen(false);
+      window.dispatchEvent(new CustomEvent('showToast', { 
+        detail: { message: 'Cliente cadastrado com sucesso!', type: 'success' } 
+      }));
+    } catch (err: any) {
+      window.dispatchEvent(new CustomEvent('showToast', { 
+        detail: { message: err.message || 'Erro ao cadastrar cliente', type: 'error' } 
+      }));
+    }
   };
 
   // CRM Summary calculations
-  const clientesVip = localCustomers.filter(c => c.total_gasto >= 500).length;
+  const clientesVip = localCustomers.filter(c => c.totalGasto >= 500).length;
   const clientesInativos = localCustomers.filter(c => {
-    const ultimaOs = allOrders.filter(os => os.customer_id === c.id).sort((a,b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime())[0];
+    const ultimaOs = allOrders.filter(os => os.customer_id === c.id).sort((a,b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime())[0];
     if (!ultimaOs) return false;
-    const dias = (Date.now() - new Date(ultimaOs.criado_em).getTime()) / (1000 * 60 * 60 * 24);
+    const dias = (Date.now() - new Date(ultimaOs.criadoEm).getTime()) / (1000 * 60 * 60 * 24);
     return dias > 180;
   }).length;
-  const ltvMedio = localCustomers.length > 0 ? localCustomers.reduce((acc, c) => acc + c.total_gasto, 0) / localCustomers.length : 0;
+  const ltvMedio = localCustomers.length > 0 ? localCustomers.reduce((acc, c) => acc + c.totalGasto, 0) / localCustomers.length : 0;
 
   return (
     <DashboardLayout>
@@ -259,9 +248,9 @@ const CustomersPage = () => {
             {sorted.map(c => {
               const seg = getSegmento(c);
               const clienteOs = allOrders.filter(os => os.customer_id === c.id);
-              const ultimaOS = clienteOs.sort((a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime())[0];
+              const ultimaOS = clienteOs.sort((a, b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime())[0];
               const diasSemVisita = ultimaOS
-                ? Math.floor((Date.now() - new Date(ultimaOS.criado_em).getTime()) / (1000 * 60 * 60 * 24))
+                ? Math.floor((Date.now() - new Date(ultimaOS.criadoEm).getTime()) / (1000 * 60 * 60 * 24))
                 : null;
 
               return (
@@ -286,9 +275,9 @@ const CustomersPage = () => {
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{ fontSize: 16, fontWeight: 700, color: 'rgba(34,197,94,0.85)', letterSpacing: '-0.02em' }}>
-                        {formatBRL(c.total_gasto)}
+                        {formatBRL(c.totalGasto)}
                       </div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)' }}>{c.total_os} OS</div>
+                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)' }}>{c.totalOs} OS</div>
                     </div>
                   </div>
 
@@ -296,11 +285,11 @@ const CustomersPage = () => {
                     <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 18px', background: 'rgba(0,0,0,0.2)' }} className="animate-in slide-in-from-top-2 duration-300">
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, marginBottom: 16 }}>
                         <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.04)' }}>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: 'rgba(255,255,255,0.85)', fontFamily: 'Syne, sans-serif' }}>{c.total_os}</div>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: 'rgba(255,255,255,0.85)', fontFamily: 'Syne, sans-serif' }}>{c.totalOs}</div>
                           <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 2 }}>OS totais</div>
                         </div>
                         <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.04)' }}>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: 'rgba(34,197,94,0.85)', fontFamily: 'Syne, sans-serif' }}>{formatBRL(c.total_gasto)}</div>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: 'rgba(34,197,94,0.85)', fontFamily: 'Syne, sans-serif' }}>{formatBRL(c.totalGasto)}</div>
                           <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 2 }}>LTV Gasto</div>
                         </div>
                         <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.04)' }}>
@@ -319,12 +308,12 @@ const CustomersPage = () => {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                             {clienteOs.slice(0, 3).map(os => (
                               <div key={os.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'rgba(255,255,255,0.015)', borderRadius: 8 }}>
-                                <span style={{ fontSize: 12, color: '#60A5FA', fontFamily: 'monospace', fontWeight: 700 }}>#{os.numero_os}</span>
+                                <span style={{ fontSize: 12, color: '#60A5FA', fontFamily: 'monospace', fontWeight: 700 }}>#{os.numeroOs}</span>
                                 <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', flex: 1, margin: '0 12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                  {os.device_label}
+                                  {os.deviceLabel}
                                 </span>
                                 <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(34,197,94,0.8)' }}>
-                                  {formatBRL((os.valor_mao_obra || 0) + (os.valor_pecas || 0))}
+                                  {formatBRL((os.valorMaoObra || 0) + (os.valorPecas || 0))}
                                 </span>
                               </div>
                             ))}

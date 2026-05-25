@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { Archive, Search, Download, ChevronDown, ChevronUp } from 'lucide-react';
-import { useAuth } from '@/app/providers/AuthContext';
-import { fetchOrdensServico } from '@/lib/services/osService';
-import { STATUS_CONFIG, formatBRL, type ServiceOrder } from '@/data/mock-data';
+
+import { useOrderList } from '@/shared/lib/hooks/orders/useOrderList';
+import { STATUS_CONFIG, formatBRL } from '@/data/mock-data';
 import { Avatar } from '@/components/ui/Avatar';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -14,39 +14,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { OsDrawer } from '@/features/dashboard/OsDrawer';
 
 const HistoricoPage = () => {
-  const { isDemoMode } = useAuth();
-  const [allOrders, setAllOrders] = useState<ServiceOrder[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: allOrders = [], isLoading } = useOrderList();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOsId, setSelectedOsId] = useState<string | null>(null);
   const [sortField, setSortField] = useState<'data' | 'valor' | 'cliente'>('data');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [statusFilter, setStatusFilter] = useState<string>('todos');
 
-  useEffect(() => {
-    const load = async () => {
-      setIsLoading(true);
-      const data = await fetchOrdensServico(isDemoMode);
-      setAllOrders(data || []);
-      setIsLoading(false);
-    };
-    load();
-    window.addEventListener('osUpdated', load);
-    window.addEventListener('demoDataGenerated', load);
-    return () => {
-      window.removeEventListener('osUpdated', load);
-      window.removeEventListener('demoDataGenerated', load);
-    };
-  }, [isDemoMode]);
-
   const filteredAndSorted = useMemo(() => {
     const q = searchTerm.toLowerCase();
     let result = allOrders.filter(os => {
       const matchSearch =
-        os.numero_os.includes(searchTerm) ||
-        os.customer_nome?.toLowerCase().includes(q) ||
-        os.customer_telefone?.includes(searchTerm) ||
-        os.device_label?.toLowerCase().includes(q) ||
+        os.numeroOs.includes(searchTerm) ||
+        os.customerNome?.toLowerCase().includes(q) ||
+        os.customerTelefone?.includes(searchTerm) ||
+        os.deviceLabel?.toLowerCase().includes(q) ||
         (os as any).customer_email?.toLowerCase().includes(q);
       const matchStatus = statusFilter === 'todos' || os.status === statusFilter;
       return matchSearch && matchStatus;
@@ -54,9 +36,9 @@ const HistoricoPage = () => {
 
     result.sort((a, b) => {
       let valA: any, valB: any;
-      if (sortField === 'data') { valA = new Date(a.criado_em).getTime(); valB = new Date(b.criado_em).getTime(); }
-      if (sortField === 'valor') { valA = (a.valor_mao_obra || 0) + (a.valor_pecas || 0); valB = (b.valor_mao_obra || 0) + (b.valor_pecas || 0); }
-      if (sortField === 'cliente') { valA = a.customer_nome; valB = b.customer_nome; }
+      if (sortField === 'data') { valA = new Date(a.criadoEm).getTime(); valB = new Date(b.criadoEm).getTime(); }
+      if (sortField === 'valor') { valA = (a.valorMaoObra || 0) + (a.valorPecas || 0); valB = (b.valorMaoObra || 0) + (b.valorPecas || 0); }
+      if (sortField === 'cliente') { valA = a.customerNome; valB = b.customerNome; }
       if (sortDir === 'asc') return valA > valB ? 1 : -1;
       return valA < valB ? 1 : -1;
     });
@@ -65,7 +47,7 @@ const HistoricoPage = () => {
   }, [allOrders, searchTerm, statusFilter, sortField, sortDir]);
 
   const totalFaturado = filteredAndSorted.reduce((acc, os) =>
-    acc + (os.valor_mao_obra || 0) + (os.valor_pecas || 0), 0
+    acc + (os.valorMaoObra || 0) + (os.valorPecas || 0), 0
   );
 
   const handleSort = (field: typeof sortField) => {
@@ -81,13 +63,13 @@ const HistoricoPage = () => {
   const exportarCSV = () => {
     const headers = ['Data', 'OS', 'Cliente', 'Telefone', 'Aparelho', 'Status', 'Valor Total'];
     const rows = filteredAndSorted.map(os => [
-      new Date(os.criado_em).toLocaleDateString('pt-BR'),
-      `#${os.numero_os}`,
-      os.customer_nome,
-      os.customer_telefone,
-      os.device_label,
+      new Date(os.criadoEm).toLocaleDateString('pt-BR'),
+      `#${os.numeroOs}`,
+      os.customerNome,
+      os.customerTelefone,
+      os.deviceLabel,
       STATUS_CONFIG[os.status as keyof typeof STATUS_CONFIG]?.label || os.status,
-      (os.valor_mao_obra || 0) + (os.valor_pecas || 0),
+      (os.valorMaoObra || 0) + (os.valorPecas || 0),
     ]);
     const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -117,8 +99,8 @@ const HistoricoPage = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12, marginBottom: 24 }} className="animate-[fadeIn_500ms_ease]">
           {[
             { label: 'Total de OS', value: allOrders.length.toString(), color: 'rgba(37,99,235,0.85)' },
-            { label: 'Total Faturado', value: formatBRL(allOrders.reduce((acc, os) => acc + (os.valor_mao_obra || 0) + (os.valor_pecas || 0), 0)), color: 'rgba(34,197,94,0.85)' },
-            { label: 'Ticket Médio', value: allOrders.length > 0 ? formatBRL(allOrders.reduce((acc, os) => acc + (os.valor_mao_obra || 0) + (os.valor_pecas || 0), 0) / allOrders.filter(o => (o.valor_mao_obra || 0) + (o.valor_pecas || 0) > 0).length) : 'R$ 0,00', color: 'rgba(6,182,212,0.85)' },
+            { label: 'Total Faturado', value: formatBRL(allOrders.reduce((acc, os) => acc + (os.valorMaoObra || 0) + (os.valorPecas || 0), 0)), color: 'rgba(34,197,94,0.85)' },
+            { label: 'Ticket Médio', value: allOrders.length > 0 ? formatBRL(allOrders.reduce((acc, os) => acc + (os.valorMaoObra || 0) + (os.valorPecas || 0), 0) / allOrders.filter(o => (o.valorMaoObra || 0) + (o.valorPecas || 0) > 0).length) : 'R$ 0,00', color: 'rgba(6,182,212,0.85)' },
             { label: 'Clientes Únicos', value: new Set(allOrders.map(o => o.customer_id)).size.toString(), color: 'rgba(245,158,11,0.85)' },
           ].map(card => (
             <div key={card.label} style={{
@@ -211,7 +193,7 @@ const HistoricoPage = () => {
                   </TableRow>
                 ) : (
                   filteredAndSorted.map(os => {
-                    const total = (os.valor_mao_obra || 0) + (os.valor_pecas || 0);
+                    const total = (os.valorMaoObra || 0) + (os.valorPecas || 0);
                     const statusConfig = STATUS_CONFIG[os.status as keyof typeof STATUS_CONFIG];
                     return (
                       <TableRow
@@ -220,29 +202,29 @@ const HistoricoPage = () => {
                         onClick={() => setSelectedOsId(os.id)}
                       >
                         <TableCell style={{ fontSize: 12, color: 'rgba(255,255,255,0.40)', whiteSpace: 'nowrap' }}>
-                          {new Date(os.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                          {new Date(os.criadoEm).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                         </TableCell>
                         <TableCell>
                           <span style={{ fontSize: 12, fontWeight: 700, color: '#60A5FA', fontFamily: 'monospace' }}>
-                            #{os.numero_os}
+                            #{os.numeroOs}
                           </span>
                         </TableCell>
                         <TableCell>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Avatar name={os.customer_nome} className="w-6 h-6 text-[9px]" />
+                            <Avatar name={os.customerNome} className="w-6 h-6 text-[9px]" />
                             <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.85)' }}>
-                              {os.customer_nome}
+                              {os.customerNome}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell style={{ fontSize: 12, color: 'rgba(255,255,255,0.40)', fontFamily: 'monospace' }}>
-                          {os.customer_telefone}
+                          {os.customerTelefone}
                         </TableCell>
                         <TableCell style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {os.device_label}
+                          {os.deviceLabel}
                         </TableCell>
                         <TableCell>
-                          <Avatar name={os.technician_nome} className="w-6 h-6 text-[9px]" />
+                          <Avatar name={os.technicianNome} className="w-6 h-6 text-[9px]" />
                         </TableCell>
                         <TableCell>
                           <span style={{
@@ -273,7 +255,7 @@ const HistoricoPage = () => {
                 {filteredAndSorted.length} resultado{filteredAndSorted.length !== 1 ? 's' : ''}
               </span>
               <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(34,197,94,0.8)' }}>
-                Total listado: {formatBRL(filteredAndSorted.reduce((acc, os) => acc + (os.valor_mao_obra || 0) + (os.valor_pecas || 0), 0))}
+                Total listado: {formatBRL(filteredAndSorted.reduce((acc, os) => acc + (os.valorMaoObra || 0) + (os.valorPecas || 0), 0))}
               </span>
             </div>
           )}

@@ -121,8 +121,8 @@ export const MOCK_CUSTOMERS: Customer[] = [
     nome: "Carlos Ferreira",
     telefone: "(92) 99201-4837",
     email: "carlos.ferreira@gmail.com",
-    total_gasto: 847.50,
-    total_os: 3,
+    total_gasto: 205.00,
+    total_os: 1,
     criado_em: "2024-03-10T14:00:00",
   },
   {
@@ -133,7 +133,7 @@ export const MOCK_CUSTOMERS: Customer[] = [
     email: null,
     total_gasto: 300.00,
     total_os: 1,
-    criado_em: "2025-05-22T11:00:00",
+    criado_em: "2024-05-22T11:00:00",
   },
   {
     id: "cust_003",
@@ -143,7 +143,7 @@ export const MOCK_CUSTOMERS: Customer[] = [
     email: "marcosalmeida@outlook.com",
     total_gasto: 0,
     total_os: 1,
-    criado_em: "2025-05-23T08:00:00",
+    criado_em: "2024-05-23T08:00:00",
   },
   {
     id: "cust_004",
@@ -151,8 +151,8 @@ export const MOCK_CUSTOMERS: Customer[] = [
     nome: "Fernanda Lima",
     telefone: "(92) 98201-5543",
     email: "fernanda.lima@gmail.com",
-    total_gasto: 1240.00,
-    total_os: 4,
+    total_gasto: 490.00,
+    total_os: 1,
     criado_em: "2023-11-20T16:00:00",
   },
   {
@@ -161,9 +161,59 @@ export const MOCK_CUSTOMERS: Customer[] = [
     nome: "João Paulo Mendes",
     telefone: "(92) 99312-8801",
     email: null,
-    total_gasto: 420.00,
-    total_os: 2,
+    total_gasto: 299.90,
+    total_os: 1,
     criado_em: "2024-08-05T10:30:00",
+  },
+  {
+    id: "cust_006",
+    tenant_id: "tenant_001",
+    nome: "Juliana Castro",
+    telefone: "(92) 99122-3344",
+    email: "ju.castro88@yahoo.com.br",
+    total_gasto: 150.00,
+    total_os: 1,
+    criado_em: "2024-01-12T09:15:00",
+  },
+  {
+    id: "cust_007",
+    tenant_id: "tenant_001",
+    nome: "Roberto Siqueira",
+    telefone: "(92) 98877-6655",
+    email: "roberto.siqueira@empresa.com",
+    total_gasto: 350.00,
+    total_os: 1,
+    criado_em: "2023-09-01T13:45:00",
+  },
+  {
+    id: "cust_008",
+    tenant_id: "tenant_001",
+    nome: "Vanessa Oliveira",
+    telefone: "(92) 98111-2233",
+    email: null,
+    total_gasto: 120.00,
+    total_os: 1,
+    criado_em: "2024-05-24T10:00:00",
+  },
+  {
+    id: "cust_009",
+    tenant_id: "tenant_001",
+    nome: "Empresa XPTO Ltda",
+    telefone: "(92) 3322-1100",
+    email: "contato@xpto.com.br",
+    total_gasto: 890.00,
+    total_os: 1,
+    criado_em: "2023-05-10T08:30:00",
+  },
+  {
+    id: "cust_010",
+    tenant_id: "tenant_001",
+    nome: "Thiago Guedes",
+    telefone: "(92) 99444-5566",
+    email: "thiagoguedes_99@hotmail.com",
+    total_gasto: 85.00,
+    total_os: 1,
+    criado_em: "2024-04-18T16:20:00",
   },
 ];
 
@@ -235,29 +285,29 @@ export const MOCK_DEVICES: Device[] = [
 
 export interface ServiceOrder {
   id: string;
-  tenant_id: string;
-  customer_id: string;
-  customer_nome: string;
-  customer_telefone: string;
-  device_id: string;
-  device_label: string;
-  device_tipo: DeviceType;
-  technician_id: string;
-  technician_nome: string;
-  numero_os: string;
+  tenantId: string;
+  customerId: string;
+  customerNome: string;
+  customerTelefone: string;
+  deviceId: string;
+  deviceLabel: string;
+  deviceTipo: DeviceType;
+  technicianId: string;
+  technicianNome: string;
+  numeroOs: string;
   status: OSStatus;
-  problema_relatado: string;
-  fotos_checkin: string[];
-  checklist_itens: ChecklistItem[];
-  assinatura_url: string | null;
-  valor_mao_obra: number | null;
-  valor_pecas: number | null;
-  aprovado_em: string | null;
-  garantia_dias: number;
-  garantia_expira_em: string | null;
-  criado_em: string;
-  atualizado_em: string;
-  horas_abertas: number;
+  problemaRelatado: string;
+  fotosCheckin: string[];
+  checklistItens: ChecklistItem[];
+  assinaturaUrl: string | null;
+  valorMaoObra: number | null;
+  valorPecas: number | null;
+  aprovadoEm: string | null;
+  garantiaDias: number;
+  garantiaExpiraEm: string | null;
+  criadoEm: string;
+  atualizadoEm: string;
+  horasAbertas: number;
 }
 
 export interface ChecklistItem {
@@ -265,13 +315,11 @@ export interface ChecklistItem {
   marcado: boolean;
 }
 
-export const MOCK_SERVICE_ORDERS: ServiceOrder[] = [
+export const MOCK_SERVICE_ORDERS: any[] = [
   {
     id: "os_001",
     tenant_id: "tenant_001",
     customer_id: "cust_001",
-    customer_nome: "Carlos Ferreira",
-    customer_telefone: "(92) 99201-4837",
     device_id: "dev_001",
     device_label: "Dell Inspiron 15 3520",
     device_tipo: "notebook",
@@ -301,8 +349,6 @@ export const MOCK_SERVICE_ORDERS: ServiceOrder[] = [
     id: "os_002",
     tenant_id: "tenant_001",
     customer_id: "cust_002",
-    customer_nome: "Aline Rodrigues",
-    customer_telefone: "(92) 98734-2291",
     device_id: "dev_002",
     device_label: "Apple iPhone 13",
     device_tipo: "celular",
@@ -332,8 +378,6 @@ export const MOCK_SERVICE_ORDERS: ServiceOrder[] = [
     id: "os_003",
     tenant_id: "tenant_001",
     customer_id: "cust_003",
-    customer_nome: "Marcos Almeida",
-    customer_telefone: "(92) 99654-7712",
     device_id: "dev_003",
     device_label: "Samsung Galaxy A54",
     device_tipo: "celular",
@@ -363,8 +407,6 @@ export const MOCK_SERVICE_ORDERS: ServiceOrder[] = [
     id: "os_004",
     tenant_id: "tenant_001",
     customer_id: "cust_004",
-    customer_nome: "Fernanda Lima",
-    customer_telefone: "(92) 98201-5543",
     device_id: "dev_004",
     device_label: "PC Gamer Customizado",
     device_tipo: "desktop",
@@ -394,8 +436,6 @@ export const MOCK_SERVICE_ORDERS: ServiceOrder[] = [
     id: "os_005",
     tenant_id: "tenant_001",
     customer_id: "cust_005",
-    customer_nome: "João Paulo Mendes",
-    customer_telefone: "(92) 99312-8801",
     device_id: "dev_005",
     device_label: "Lenovo IdeaPad 3i",
     device_tipo: "notebook",
@@ -421,6 +461,126 @@ export const MOCK_SERVICE_ORDERS: ServiceOrder[] = [
     atualizado_em: "2025-05-23T08:00:00",
     horas_abertas: 3,
   },
+  {
+    id: "os_006",
+    tenant_id: "tenant_001",
+    customer_id: "cust_006",
+    device_id: "dev_006",
+    device_label: "Tablet Samsung Tab A",
+    device_tipo: "tablet",
+    technician_id: "user_001",
+    technician_nome: "Ricardo Souza",
+    numero_os: "0050",
+    status: "em_bancada",
+    problema_relatado: "Bateria descarrega muito rápido",
+    fotos_checkin: [],
+    checklist_itens: [{ label: "Carregador", marcado: false }],
+    assinatura_url: null,
+    valor_mao_obra: 50.00,
+    valor_pecas: 100.00,
+    aprovado_em: "2025-05-24T10:00:00",
+    garantia_dias: 30,
+    garantia_expira_em: null,
+    criado_em: "2025-05-24T09:00:00",
+    atualizado_em: "2025-05-24T10:30:00",
+    horas_abertas: 5,
+  },
+  {
+    id: "os_007",
+    tenant_id: "tenant_001",
+    customer_id: "cust_007",
+    device_id: "dev_007",
+    device_label: "Notebook Acer Nitro 5",
+    device_tipo: "notebook",
+    technician_id: "user_002",
+    technician_nome: "Breno Tavares",
+    numero_os: "0051",
+    status: "aguardando_peca",
+    problema_relatado: "Teclado parou de funcionar e faz barulho na ventoinha",
+    fotos_checkin: [],
+    checklist_itens: [{ label: "Carregador", marcado: true }],
+    assinatura_url: null,
+    valor_mao_obra: 150.00,
+    valor_pecas: 200.00,
+    aprovado_em: "2025-05-22T14:00:00",
+    garantia_dias: 90,
+    garantia_expira_em: null,
+    criado_em: "2025-05-22T13:00:00",
+    atualizado_em: "2025-05-22T14:30:00",
+    horas_abertas: 48,
+  },
+  {
+    id: "os_008",
+    tenant_id: "tenant_001",
+    customer_id: "cust_008",
+    device_id: "dev_008",
+    device_label: "iPhone 11",
+    device_tipo: "celular",
+    technician_id: "user_001",
+    technician_nome: "Ricardo Souza",
+    numero_os: "0052",
+    status: "pronto",
+    problema_relatado: "Troca de tela",
+    fotos_checkin: [],
+    checklist_itens: [{ label: "Carregador", marcado: false }],
+    assinatura_url: null,
+    valor_mao_obra: 50.00,
+    valor_pecas: 70.00,
+    aprovado_em: "2025-05-23T11:00:00",
+    garantia_dias: 90,
+    garantia_expira_em: null,
+    criado_em: "2025-05-23T10:00:00",
+    atualizado_em: "2025-05-23T16:00:00",
+    horas_abertas: 24,
+  },
+  {
+    id: "os_009",
+    tenant_id: "tenant_001",
+    customer_id: "cust_009",
+    device_id: "dev_009",
+    device_label: "Macbook Pro 2021",
+    device_tipo: "notebook",
+    technician_id: "user_002",
+    technician_nome: "Breno Tavares",
+    numero_os: "0053",
+    status: "em_analise",
+    problema_relatado: "Não reconhece disco rígido",
+    fotos_checkin: [],
+    checklist_itens: [{ label: "Carregador", marcado: true }],
+    assinatura_url: null,
+    valor_mao_obra: 200.00,
+    valor_pecas: 690.00,
+    aprovado_em: null,
+    garantia_dias: 90,
+    garantia_expira_em: null,
+    criado_em: "2025-05-24T14:00:00",
+    atualizado_em: "2025-05-24T14:00:00",
+    horas_abertas: 2,
+  },
+  {
+    id: "os_010",
+    tenant_id: "tenant_001",
+    customer_id: "cust_010",
+    device_id: "dev_010",
+    device_label: "Xiaomi Redmi Note 12",
+    device_tipo: "celular",
+    technician_id: "user_001",
+    technician_nome: "Ricardo Souza",
+    numero_os: "0054",
+    status: "entregue",
+    problema_relatado: "Conector USB com mau contato",
+    fotos_checkin: [],
+    checklist_itens: [{ label: "Carregador", marcado: true }],
+    assinatura_url: null,
+    valor_mao_obra: 60.00,
+    valor_pecas: 25.00,
+    aprovado_em: "2025-05-20T10:00:00",
+    garantia_dias: 90,
+    garantia_expira_em: null,
+    criado_em: "2025-05-20T09:00:00",
+    atualizado_em: "2025-05-21T15:00:00",
+    horas_abertas: 30,
+  }
 ];
 
 // ============================================================
@@ -429,16 +589,16 @@ export const MOCK_SERVICE_ORDERS: ServiceOrder[] = [
 
 export interface StatusHistory {
   id: string;
-  os_id: string;
-  status_anterior: OSStatus | null;
-  status_novo: OSStatus;
-  nota_interna: string | null;
-  nota_publica: string | null;
-  changed_by_nome: string;
-  criado_em: string;
+  osId: string;
+  statusAnterior: OSStatus | null;
+  statusNovo: OSStatus;
+  notaInterna: string | null;
+  notaPublica: string | null;
+  changedByNome: string;
+  criadoEm: string;
 }
 
-export const MOCK_STATUS_HISTORY: StatusHistory[] = [
+export const MOCK_STATUS_HISTORY: any[] = [
   {
     id: "hist_001",
     os_id: "os_001",
@@ -468,7 +628,7 @@ export const MOCK_STATUS_HISTORY: StatusHistory[] = [
     nota_publica: "Orçamento aprovado! Seu aparelho já está sendo consertado.",
     changed_by_nome: "Breno Tavares",
     criado_em: "2025-05-21T10:30:00",
-  },
+  }
 ];
 
 // ============================================================

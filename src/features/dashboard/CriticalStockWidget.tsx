@@ -1,14 +1,17 @@
-import { getCriticalStock, formatBRL } from '@/data/mock-data';
+import { formatBRL } from '@/data/mock-data';
 import { AlertTriangle, Package } from 'lucide-react';
-import { useAuth } from '@/app/providers/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/Card';
+import { useInventoryList } from '@/shared/lib/hooks/inventory/useInventoryList';
 import './CriticalStockWidget.css';
 
 const CriticalStockWidget = () => {
-  const { isDemoMode } = useAuth();
   const navigate = useNavigate();
-  const criticalItems = isDemoMode ? getCriticalStock() : [];
+  const { data: remoteProducts } = useInventoryList();
+  
+  const criticalItems = (remoteProducts || []).filter((item: any) => 
+    item.estoqueCritico || item.quantidadeEstoque <= (item.estoqueMinimo || 3)
+  );
 
   return (
     <Card className="border-white/5 bg-surface-2/80 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
@@ -31,9 +34,9 @@ const CriticalStockWidget = () => {
             </div>
           ) : (
             <ul className="flex flex-col divide-y divide-white/[0.04]">
-              {criticalItems.map(item => {
-                const nivel = Math.min((item.quantidade_estoque / 5) * 100, 100);
-                const isCritico = item.quantidade_estoque <= 2;
+              {criticalItems.map((item: any) => {
+                const nivel = Math.min((item.quantidadeEstoque / 5) * 100, 100);
+                const isCritico = item.quantidadeEstoque <= 2;
                 return (
                   <li key={item.id} className="py-3 -mx-2 px-2 rounded-lg hover:bg-white/[0.02] transition-colors">
                     <div className="flex justify-between items-start mb-2">
@@ -50,10 +53,10 @@ const CriticalStockWidget = () => {
                           fontSize: 13, fontWeight: 700,
                           color: isCritico ? 'rgba(239,68,68,0.9)' : 'rgba(245,158,11,0.85)',
                         }}>
-                          {item.quantidade_estoque} un
+                          {item.quantidadeEstoque} un
                         </span>
                         <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)' }}>
-                          {formatBRL(item.preco_venda)}
+                          {formatBRL(item.precoVenda)}
                         </span>
                       </div>
                     </div>

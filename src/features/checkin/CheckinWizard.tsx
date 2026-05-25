@@ -140,8 +140,6 @@ const CheckinWizard = () => {
       const newOsData = {
         tenant_id: 'tenant_001',
         customer_id: selectedCustomer.id,
-        customer_nome: selectedCustomer.nome,
-        customer_telefone: selectedCustomer.telefone,
         device_id: 'dev_new',
         device_tipo: deviceType as any,
         device_label: `${deviceBrand} ${deviceModel}`,
@@ -284,8 +282,6 @@ const CheckinWizard = () => {
       const draftData = {
         tenant_id: 'tenant_001',
         customer_id: customer.id,
-        customer_nome: customer.nome,
-        customer_telefone: customer.telefone,
         status: 'em_analise' as any,
         numero_os: Math.floor(1000 + Math.random() * 9000).toString(),
         device_tipo: 'celular' as any,
@@ -413,9 +409,9 @@ const CheckinWizard = () => {
 
     // Fallback sempre disponível: wa.me manual
     const message = encodeURIComponent(
-      `Olá ${createdOs.customer_nome}! Sua OS #${createdOs.numero_os} foi aberta. Acompanhe: ${window.location.origin}/os/${createdOs.numero_os}`
+      `Olá ${createdOs.customerNome}! Sua OS #${createdOs.numero_os} foi aberta. Acompanhe: ${window.location.origin}/os/${createdOs.numero_os}`
     );
-    const phone = createdOs.customer_telefone.replace(/\D/g, '');
+    const phone = createdOs.customerTelefone.replace(/\D/g, '');
     window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
     setIsSubmitting(false);
     navigate('/dashboard/ordens');
@@ -845,7 +841,7 @@ const CheckinWizard = () => {
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <span className="text-white/40">Cliente:</span>
-                    <span className="text-white/90 col-span-2 font-medium">{createdOs?.customer_nome}</span>
+                    <span className="text-white/90 col-span-2 font-medium">{createdOs?.customerNome}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <span className="text-white/40">Aparelho:</span>

@@ -27,14 +27,14 @@ export const QuoteModal = ({ os, onClose, onSaveQuote }: QuoteModalProps) => {
     // Simula a IA gerando o orçamento baseado no problema
     const generateQuote = () => {
       setTimeout(() => {
-        const text = os.problema_relatado.toLowerCase();
+        const text = os.problemaRelatado.toLowerCase();
         let mObra = 80;
         let cPecas = 0;
         let tempReasons: string[] = [];
 
         if (text.includes('tela') || text.includes('display')) {
           mObra = 120;
-          cPecas = os.device_tipo === 'notebook' ? 450 : 250;
+          cPecas = os.deviceTipo === 'notebook' ? 450 : 250;
           tempReasons.push('Substituição de display completo (Risco Alto)');
         }
         if (text.includes('bateria') || text.includes('carrega')) {
@@ -72,7 +72,7 @@ export const QuoteModal = ({ os, onClose, onSaveQuote }: QuoteModalProps) => {
     };
 
     generateQuote();
-  }, [os.problema_relatado, os.device_tipo]);
+  }, [os.problemaRelatado, os.deviceTipo]);
 
   const total = maoDeObra + pecas;
 
@@ -106,11 +106,11 @@ export const QuoteModal = ({ os, onClose, onSaveQuote }: QuoteModalProps) => {
     } else {
       // Fallback wa.me para demo ou sem integração configurada
       const msg = encodeURIComponent(
-        `Olá ${os.customer_nome}! Orçamento OS #${os.numero_os}:\n` +
+        `Olá ${os.customerNome}! Orçamento OS #${os.numeroOs}:\n` +
         `Mão de obra: R$ ${maoDeObra}\nPeças: R$ ${pecas}\nTotal: R$ ${total}\n` +
-        `Aprovar/recusar: ${window.location.origin}/os/${os.numero_os}`
+        `Aprovar/recusar: ${window.location.origin}/os/${os.numeroOs}`
       );
-      const phone = os.customer_telefone.replace(/\D/g, '');
+      const phone = os.customerTelefone.replace(/\D/g, '');
       window.open(`https://wa.me/55${phone}?text=${msg}`, '_blank');
       setIsSending(false);
       onSaveQuote(maoDeObra, pecas);

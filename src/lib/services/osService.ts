@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/shared/supabase';
 import { MOCK_SERVICE_ORDERS, MOCK_CUSTOMERS, type ServiceOrder } from '@/data/mock-data';
 import { generateFullDemoScenarios } from '@/data/demo-generator';
+import { demoStore } from '@/shared/lib/api/providers/demo/demo-store';
 
 const SESSION_STORAGE_KEY = 'techos_demo_orders';
 const DEMO_CUSTOMERS_KEY = 'techos_demo_customers';
@@ -16,18 +17,16 @@ export const initDemoData = () => {
 export const applyDemoScenarios = () => {
   const scenarios = generateFullDemoScenarios();
   
-  // Salvar OS
-  const existingOs = JSON.parse(sessionStorage.getItem(SESSION_STORAGE_KEY) || '[]');
   const newOs = scenarios.map(s => s.os);
-  sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify([...newOs, ...existingOs]));
-  
-  // Salvar Clientes
-  const existingCustomers = JSON.parse(sessionStorage.getItem(DEMO_CUSTOMERS_KEY) || '[]');
   const newCustomers = scenarios.map(s => s.customer);
-  sessionStorage.setItem(DEMO_CUSTOMERS_KEY, JSON.stringify([...newCustomers, ...existingCustomers]));
+  
+  // Mutate demoStore directly to ensure all new hooks receive the data
+  demoStore.orders = [...newOs, ...demoStore.orders];
+  demoStore.customers = [...newCustomers, ...demoStore.customers] as any[];
   
   // Disparar evento global para todas as páginas atualizarem
   window.dispatchEvent(new CustomEvent('demoDataGenerated'));
+  window.dispatchEvent(new Event('osUpdated'));
 };
 
 export const fetchDemoCustomers = () => {
@@ -42,9 +41,7 @@ export const fetchDemoCustomers = () => {
  */
 export const fetchOrdensServico = async (isDemoMode: boolean): Promise<ServiceOrder[]> => {
   if (isDemoMode) {
-    initDemoData();
-    const data = sessionStorage.getItem(SESSION_STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    return demoStore.orders as unknown as ServiceOrder[];
   } else {
     try {
       const { data, error } = await supabase

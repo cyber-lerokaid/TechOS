@@ -3,58 +3,99 @@ import CriticalStockWidget from '@/features/dashboard/CriticalStockWidget';
 import RevenueChart from '@/features/dashboard/RevenueChart';
 import KanbanBoard from '@/features/dashboard/KanbanBoard';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
-import { useAuth } from '@/app/providers/AuthContext';
-import { MOCK_DASHBOARD_METRICS } from '@/data/mock-data';
+import { Modal } from '@/components/ui/Modal';
+import { useState } from 'react';
+
+import { useOrderList } from '@/shared/lib/hooks/orders/useOrderList';
 import { Clock, CheckCircle2, DollarSign, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const { isDemoMode } = useAuth();
-  
+  const [selectedMetricId, setSelectedMetricId] = useState<string | null>(null);
+
   const hora = new Date().getHours();
   const saudacao = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
   
-  const m = isDemoMode ? MOCK_DASHBOARD_METRICS : {
-    os_abertas_hoje: 0,
-    os_prontas_retirada: 0,
-    faturamento_dia: 0,
-    ticket_medio: 0
-  };
+  const { data: allOrders = [] } = useOrderList();
+
+  const todayDateStr = new Date().toDateString();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayDateStr = yesterday.toDateString();
+
+  const osAbertasHoje = allOrders.filter((os: any) => new Date(os.criadoEm).toDateString() === todayDateStr).length;
+  const osAbertasOntem = allOrders.filter((os: any) => new Date(os.criadoEm).toDateString() === yesterdayDateStr).length;
+  const trendOsAbertas = osAbertasHoje - osAbertasOntem;
+
+  const osProntas = allOrders.filter((os: any) => os.status === 'pronto').length;
+  
+  const faturamentoDia = allOrders
+    .filter((os: any) => (os.status === 'entregue' || os.status === 'pronto') && new Date(os.atualizadoEm).toDateString() === todayDateStr)
+    .reduce((acc: number, os: any) => acc + (os.valorMaoObra || 0) + (os.valorPecas || 0), 0);
+    
+  const faturamentoOntem = allOrders
+    .filter((os: any) => (os.status === 'entregue' || os.status === 'pronto') && new Date(os.atualizadoEm).toDateString() === yesterdayDateStr)
+    .reduce((acc: number, os: any) => acc + (os.valorMaoObra || 0) + (os.valorPecas || 0), 0);
+  const trendFaturamento = faturamentoDia - faturamentoOntem;
+    
+  const concluidasHoje = allOrders.filter((os: any) => (os.status === 'entregue' || os.status === 'pronto') && new Date(os.atualizadoEm).toDateString() === todayDateStr);
+  const ticketMedio = concluidasHoje.length > 0 ? faturamentoDia / concluidasHoje.length : 0;
 
   const metrics = [
     {
       id: 'm1',
       title: 'OS Abertas Hoje',
-      value: m.os_abertas_hoje,
+      value: osAbertasHoje,
       type: 'number' as const,
       icon: Clock,
-      trend: { value: 2, isPositive: true }
+      trend: { value: Math.abs(trendOsAbertas), isPositive: trendOsAbertas >= 0 }
     },
     {
       id: 'm2',
       title: 'Prontas p/ Retirada',
-      value: m.os_prontas_retirada,
+      value: osProntas,
       type: 'number' as const,
       icon: CheckCircle2,
-      alert: m.os_prontas_retirada > 0
+      alert: osProntas > 0
     },
     {
       id: 'm3',
       title: 'Faturamento do Dia',
-      value: m.faturamento_dia,
+      value: faturamentoDia,
       type: 'currency' as const,
       icon: DollarSign,
-      trend: { value: 150, isPositive: true }
+      trend: { value: Math.abs(trendFaturamento), isPositive: trendFaturamento >= 0 }
     },
     {
       id: 'm4',
-      title: 'Ticket Médio',
-      value: m.ticket_medio,
+      title: 'Ticket Médio (Hoje)',
+      value: ticketMedio,
       type: 'currency' as const,
       icon: Activity
     }
   ];
+
+  const EXPLANATIONS: Record<string, { title: string; description: string }> = {
+    m1: {
+      title: 'OS Abertas Hoje',
+      description: 'Esta métrica contabiliza o número total de Ordens de Serviço (OS) que deram entrada e foram cadastradas no sistema estritamente no dia de hoje.'
+    },
+    m2: {
+      title: 'Prontas p/ Retirada',
+      description: 'Mostra a quantidade atual de aparelhos que já foram consertados e estão aguardando o cliente vir retirar. Esta contagem ignora a data, focando apenas no status "Pronto".'
+    },
+    m3: {
+      title: 'Faturamento do Dia',
+      description: 'Representa a soma do valor total (Mão de Obra + Peças) de todas as Ordens de Serviço que mudaram para o status de "Pronto" ou "Entregue" no dia de hoje.'
+    },
+    m4: {
+      title: 'Ticket Médio (Hoje)',
+      description: 'É a média de valor gasto pelos clientes nos serviços concluídos hoje. O cálculo divide o "Faturamento do Dia" pelo número de OS que ficaram prontas hoje.'
+    }
+  };
+
+  const selectedExplanation = selectedMetricId ? EXPLANATIONS[selectedMetricId] : null;
 
   return (
     <DashboardLayout>
@@ -76,7 +117,11 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-4 gap-4 mb-6">
           {metrics.map((metric) => (
-            <div key={metric.id}>
+            <div 
+              key={metric.id} 
+              onClick={() => setSelectedMetricId(metric.id)}
+              className="cursor-pointer"
+            >
               <MetricCardComponent metric={metric} />
             </div>
           ))}
@@ -101,6 +146,17 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      <Modal 
+        isOpen={!!selectedMetricId} 
+        onClose={() => setSelectedMetricId(null)}
+        title={selectedExplanation?.title}
+        maxWidth="md"
+      >
+        <div className="text-muted-foreground leading-relaxed mt-2 text-[15px]">
+          {selectedExplanation?.description}
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 };

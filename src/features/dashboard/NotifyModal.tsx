@@ -29,9 +29,9 @@ export const NotifyModal = ({ isOpen, onClose, onNotify, customerName, device, n
     if (isDemoMode || !tenant?.whatsapp_enabled) {
       // Em modo demo ou sem config: simula envio e abre wa.me
       const message = encodeURIComponent(
-        `Olá, ${customerName}! Seu ${device} está agora com status: ${newStatus}. Acompanhe: ${window.location.origin}/os/${os.numero_os}`
+        `Olá, ${customerName}! Seu ${device} está agora com status: ${newStatus}. Acompanhe: ${window.location.origin}/os/${os.numeroOs}`
       );
-      const phone = os.customer_telefone.replace(/\D/g, '');
+      const phone = os.customerTelefone.replace(/\D/g, '');
       window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
       setToastMessage('Mensagem aberta no WhatsApp (modo manual)');
       setToastType('success');

@@ -33,7 +33,7 @@ const PublicOSLink = () => {
         
         if (sbError || !data) {
           // Fallback: buscar nos dados mockados (modo demo)
-          const found = MOCK_SERVICE_ORDERS.find(o => o.numero_os === osNumber);
+          const found = MOCK_SERVICE_ORDERS.find(o => o.numeroOs === osNumber);
           if (found) {
             setOs(found);
           } else {
@@ -44,7 +44,7 @@ const PublicOSLink = () => {
         }
       } catch {
         // Fallback para mock em caso de erro de conexão
-        const found = MOCK_SERVICE_ORDERS.find(o => o.numero_os === osNumber);
+        const found = MOCK_SERVICE_ORDERS.find(o => o.numeroOs === osNumber);
         if (found) setOs(found);
         else setError('Ordem de serviço não encontrada.');
       } finally {
@@ -102,10 +102,10 @@ const PublicOSLink = () => {
         <section className="os-status-card">
           <div className="os-header-info">
             <div>
-              <h2 className="customer-greeting">Olá, {os.customer_nome.split(' ')[0]}!</h2>
-              <p className="device-desc">{os.device_label}</p>
+              <h2 className="customer-greeting">Olá, {os.customerNome.split(' ')[0]}!</h2>
+              <p className="device-desc">{os.deviceLabel}</p>
             </div>
-            <div className="os-badge">OS #{os.numero_os}</div>
+            <div className="os-badge">OS #{os.numeroOs}</div>
           </div>
 
           <ProgressBar status={os.status} />
@@ -124,7 +124,7 @@ const PublicOSLink = () => {
 
         <StatusHistoryTimeline osId={os.id} currentStatus={os.status} />
 
-        <ReactiveShowcase deviceType={os.device_tipo} />
+        <ReactiveShowcase deviceType={os.deviceTipo} />
 
       </main>
 

@@ -1,12 +1,13 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Laptop, Smartphone, Monitor, Tablet, Wrench, Clock } from 'lucide-react';
 import { type OSStatus, type ServiceOrder, STATUS_CONFIG } from '@/data/mock-data';
 import { formatTimeAgo } from '@/lib';
 import { NotifyModal } from './NotifyModal';
 import { Avatar } from '@/components/ui/Avatar';
 import { OsDrawer } from './OsDrawer';
-import { useAuth } from '@/app/providers/AuthContext';
-import { fetchOrdensServico, updateOrdemServico } from '@/lib/services/osService';
+
+import { useOrderList } from '@/shared/lib/hooks/orders/useOrderList';
+import { useUpdateOrderStatus } from '@/shared/lib/hooks/orders/useUpdateOrderStatus';
 import { formatBRL } from '@/data/mock-data';
 import { Card, CardContent } from '@/components/ui/Card';
 import './KanbanBoard.css';
@@ -72,8 +73,8 @@ function KanbanCard({ os, isOverlay = false, onClick }: { os: ServiceOrder, isOv
     } : {}),
   };
 
-  const DeviceIcon = deviceIcons[os.device_tipo] || Wrench;
-  const isWarning = os.horas_abertas > 48;
+  const DeviceIcon = deviceIcons[os.deviceTipo] || Wrench;
+  const isWarning = os.horasAbertas > 48;
   const statusColor = STATUS_CONFIG[os.status]?.cor || 'var(--color-primary)';
 
   return (
@@ -98,28 +99,28 @@ function KanbanCard({ os, isOverlay = false, onClick }: { os: ServiceOrder, isOv
 
       <div className="flex justify-between items-center">
         <span style={{ fontSize: 11, fontWeight: 700, color: statusColor, fontFamily: 'monospace', letterSpacing: '0.03em' }}>
-          #{os.numero_os}
+          #{os.numeroOs}
         </span>
         <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)', display: 'flex', alignItems: 'center', gap: 3 }}>
           <Clock size={9} />
-          {formatTimeAgo(os.atualizado_em)}
+          {formatTimeAgo(os.atualizadoEm)}
         </span>
       </div>
 
       <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.88)', lineHeight: 1.3 }}>
-        {os.customer_nome}
+        {os.customerNome}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'rgba(255,255,255,0.38)' }}>
         <DeviceIcon size={11} />
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {os.device_label}
+          {os.deviceLabel}
         </span>
       </div>
 
-      {(os.valor_mao_obra || os.valor_pecas) ? (
+      {(os.valorMaoObra || os.valorPecas) ? (
         <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(34,197,94,0.85)', letterSpacing: '-0.01em' }}>
-          {formatBRL((os.valor_mao_obra || 0) + (os.valor_pecas || 0))}
+          {formatBRL((os.valorMaoObra || 0) + (os.valorPecas || 0))}
         </div>
       ) : (
         <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.20)', fontStyle: 'italic' }}>
@@ -128,11 +129,11 @@ function KanbanCard({ os, isOverlay = false, onClick }: { os: ServiceOrder, isOv
       )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 2 }}>
-        <Avatar name={os.customer_nome} className="w-5 h-5 text-[9px]" />
+        <Avatar name={os.customerNome} className="w-5 h-5 text-[9px]" />
         {isWarning && (
           <span style={{ fontSize: 9, color: 'rgba(245,158,11,0.8)', display: 'flex', alignItems: 'center', gap: 2, fontWeight: 600 }}>
             <Clock size={9} />
-            {os.horas_abertas}h sem update
+            {os.horasAbertas}h sem update
           </span>
         )}
       </div>
@@ -169,8 +170,7 @@ function KanbanColumn({ column, orders, onCardClick }: { column: any, orders: Se
 }
 
 const KanbanBoard = () => {
-  const { isDemoMode } = useAuth();
-  const [orders, setOrders] = useState<ServiceOrder[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [selectedOsId, setSelectedOsId] = useState<string | null>(null);
   const [modalData, setModalData] = useState<{ isOpen: boolean; os: ServiceOrder | null; newStatus: OSStatus | null }>({
     isOpen: false,
@@ -181,20 +181,14 @@ const KanbanBoard = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [originalStatus, setOriginalStatus] = useState<OSStatus | null>(null);
 
-  useEffect(() => {
-    const loadOrders = async () => {
-      const data = await fetchOrdensServico(isDemoMode);
-      setOrders(data);
-    };
+  const { data: remoteOrders } = useOrderList();
+  const updateStatusMutation = useUpdateOrderStatus();
 
-    loadOrders();
-    window.addEventListener('osUpdated', loadOrders);
-    window.addEventListener('demoDataGenerated', loadOrders);
-    return () => {
-      window.removeEventListener('osUpdated', loadOrders);
-      window.removeEventListener('demoDataGenerated', loadOrders);
-    };
-  }, [isDemoMode]);
+  useEffect(() => {
+    if (remoteOrders) {
+      setOrders(remoteOrders);
+    }
+  }, [remoteOrders]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -280,11 +274,10 @@ const KanbanBoard = () => {
         newStatus: newStatus as OSStatus
       });
 
-      updateOrdemServico(activeOs.id, {
+      updateStatusMutation.mutateAsync({
+        id: activeOs.id,
         status: newStatus,
-        atualizado_em: new Date().toISOString(),
-        horas_abertas: 0
-      }, isDemoMode).catch(e => { if (import.meta.env.DEV) console.error(e); });
+      }).catch(e => { if (import.meta.env.DEV) console.error(e); });
     }
     setOriginalStatus(null);
   };
@@ -327,8 +320,8 @@ const KanbanBoard = () => {
           isOpen={modalData.isOpen}
           onClose={closeNotifyModal}
           onNotify={closeNotifyModal}
-          customerName={modalData.os.customer_nome}
-          device={modalData.os.device_label}
+          customerName={modalData.os.customerNome}
+          device={modalData.os.deviceLabel}
           newStatus={STATUS_CONFIG[modalData.newStatus].label}
           osId={modalData.os.id}
           os={modalData.os}

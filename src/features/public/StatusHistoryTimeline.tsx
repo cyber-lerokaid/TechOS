@@ -9,7 +9,7 @@ interface Props {
 
 const StatusHistoryTimeline = ({ osId }: Props) => {
   // Filtramos os históricos públicos referentes a esta OS
-  const history = MOCK_STATUS_HISTORY.filter(h => h.os_id === osId && h.nota_publica);
+  const history = MOCK_STATUS_HISTORY.filter(h => h.osId === osId && h.notaPublica);
   
   if (history.length === 0) return null;
 
@@ -25,8 +25,8 @@ const StatusHistoryTimeline = ({ osId }: Props) => {
               <div className="timeline-line"></div>
             </div>
             <div className="timeline-content">
-              <p className="timeline-note">{item.nota_publica}</p>
-              <span className="timeline-time">{formatTimeAgo(item.criado_em)}</span>
+              <p className="timeline-note">{item.notaPublica}</p>
+              <span className="timeline-time">{formatTimeAgo(item.criadoEm)}</span>
             </div>
           </div>
         ))}

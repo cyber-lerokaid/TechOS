@@ -41,7 +41,7 @@ const Topbar = () => {
   }, [isDemoMode]);
 
   const filteredOrders = orders.filter(os => 
-    os.numero_os?.includes(searchTerm) || os.device_label?.toLowerCase().includes(searchTerm.toLowerCase())
+    os.numeroOs?.includes(searchTerm) || os.deviceLabel?.toLowerCase().includes(searchTerm.toLowerCase())
   ).slice(0, 3);
   
   const filteredCustomers = customers.filter(c => 
@@ -93,10 +93,10 @@ const Topbar = () => {
                 <h4 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Ordens de Serviço</h4>
                 {filteredOrders.length === 0 ? <div style={{ fontSize: '14px', color: 'var(--text-muted)', padding: '8px 0', textAlign: 'center' }}>Nenhuma OS encontrada</div> : null}
                 {filteredOrders.map(os => (
-                  <div key={os.id} className="search-result-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', cursor: 'pointer', borderRadius: 'var(--radius-md)' }} onClick={() => handleSearchClick(`/dashboard/ordens?search=${encodeURIComponent(os.numero_os)}`)}>
+                  <div key={os.id} className="search-result-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', cursor: 'pointer', borderRadius: 'var(--radius-md)' }} onClick={() => handleSearchClick(`/dashboard/ordens?search=${encodeURIComponent(os.numeroOs)}`)}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>#{os.numero_os}</span> 
-                      <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{os.device_label}</span>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>#{os.numeroOs}</span> 
+                      <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{os.deviceLabel}</span>
                     </div>
                   </div>
                 ))}
@@ -137,8 +137,8 @@ const Topbar = () => {
               <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
                 {orders.filter(os => os.status === 'pronto').map(os => (
                   <div key={os.id} className="search-result-item" style={{ padding: '12px 16px', cursor: 'pointer', borderBottom: '1px solid var(--border-subtle)' }} onClick={() => navigate('/dashboard/os')}>
-                    <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>OS #{os.numero_os} está pronta para retirada</p>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{os.customer_nome}</span>
+                    <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>OS #{os.numeroOs} está pronta para retirada</p>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{os.customerNome}</span>
                   </div>
                 ))}
                 {criticalStock.map(item => (

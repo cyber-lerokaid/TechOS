@@ -26,8 +26,8 @@ const QuoteApproval = ({ os, onApprove }: Props) => {
     }, 1500);
   };
 
-  const maoDeObra = os.valor_mao_obra || 0;
-  const pecas = os.valor_pecas || 0;
+  const maoDeObra = os.valorMaoObra || 0;
+  const pecas = os.valorPecas || 0;
   const total = maoDeObra + pecas;
 
   if (result) {

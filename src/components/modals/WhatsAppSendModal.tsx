@@ -15,8 +15,8 @@ export const WhatsAppSendModal = ({ isOpen, onClose, os }: WhatsAppSendModalProp
   useEffect(() => {
     if (os) {
       const statusLabel = STATUS_CONFIG[os.status]?.label || os.status;
-      const nomeCurto = os.customer_nome.split(' ')[0];
-      const defaultMessage = `Olá ${nomeCurto}! 🛠️\n\nA sua Ordem de Serviço *#${os.numero_os}* foi atualizada no nosso sistema.\n\nNovo status: *${statusLabel}*\n\nAgradecemos a preferência!`;
+      const nomeCurto = os.customerNome.split(' ')[0];
+      const defaultMessage = `Olá ${nomeCurto}! 🛠️\n\nA sua Ordem de Serviço *#${os.numeroOs}* foi atualizada no nosso sistema.\n\nNovo status: *${statusLabel}*\n\nAgradecemos a preferência!`;
       setMessage(defaultMessage);
     }
   }, [os]);
@@ -24,12 +24,12 @@ export const WhatsAppSendModal = ({ isOpen, onClose, os }: WhatsAppSendModalProp
   if (!isOpen || !os) return null;
 
   const handleSend = () => {
-    if (!os.customer_telefone) {
+    if (!os.customerTelefone) {
       alert('Esta Ordem de Serviço não possui um telefone de cliente cadastrado.');
       return;
     }
 
-    let phone = os.customer_telefone.replace(/\D/g, '');
+    let phone = os.customerTelefone.replace(/\D/g, '');
     if (phone.length === 10 || phone.length === 11) {
       phone = `55${phone}`;
     }
@@ -73,7 +73,7 @@ export const WhatsAppSendModal = ({ isOpen, onClose, os }: WhatsAppSendModalProp
         {/* Content */}
         <div className="p-5 flex flex-col gap-4">
           <p className="text-sm text-zinc-300">
-            O status da OS <strong>#{os.numero_os}</strong> mudou. Deseja enviar uma mensagem para <strong>{os.customer_nome}</strong>?
+            O status da OS <strong>#{os.numeroOs}</strong> mudou. Deseja enviar uma mensagem para <strong>{os.customerNome}</strong>?
           </p>
 
           <div className="flex flex-col gap-2">
@@ -88,7 +88,7 @@ export const WhatsAppSendModal = ({ isOpen, onClose, os }: WhatsAppSendModalProp
             />
           </div>
 
-          {!os.customer_telefone && (
+          {!os.customerTelefone && (
             <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs text-center">
               Atenção: O cliente não possui telefone cadastrado!
             </div>
@@ -102,7 +102,7 @@ export const WhatsAppSendModal = ({ isOpen, onClose, os }: WhatsAppSendModalProp
           </Button>
           <Button 
             onClick={handleSend}
-            disabled={!os.customer_telefone || !message.trim()}
+            disabled={!os.customerTelefone || !message.trim()}
             className="bg-green-600 hover:bg-green-500 text-white gap-2 px-6 shadow-lg shadow-green-900/20"
           >
             Enviar <ExternalLink size={16} />

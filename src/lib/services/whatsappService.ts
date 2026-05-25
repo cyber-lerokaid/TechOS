@@ -48,17 +48,17 @@ export const notifyCheckin = async (
   publicBaseUrl: string
 ) => {
   const message =
-    `Olá, *${os.customer_nome}*! 👋\n\n` +
-    `Seu *${os.device_label}* foi recebido com sucesso pela *${nomeLoja}*.\n\n` +
-    `📋 *OS #${os.numero_os}*\n` +
-    `🔧 Problema relatado: ${os.problema_relatado}\n\n` +
+    `Olá, *${os.customerNome}*! 👋\n\n` +
+    `Seu *${os.deviceLabel}* foi recebido com sucesso pela *${nomeLoja}*.\n\n` +
+    `📋 *OS #${os.numeroOs}*\n` +
+    `🔧 Problema relatado: ${os.problemaRelatado}\n\n` +
     `Acompanhe o andamento do conserto em tempo real pelo link abaixo:\n` +
-    `👉 ${publicBaseUrl}/os/${os.numero_os}\n\n` +
+    `👉 ${publicBaseUrl}/os/${os.numeroOs}\n\n` +
     `Qualquer dúvida, é só responder esta mensagem. 😊`;
 
   return sendWhatsAppMessage({
     tenantId,
-    phone: os.customer_telefone,
+    phone: os.customerTelefone,
     message,
     messageType: 'checkin',
     osId: os.id,
@@ -74,22 +74,22 @@ export const notifyStatusUpdate = async (
   const statusMessages: Record<string, string> = {
     em_analise: `🔍 Seu aparelho está sendo analisado pelo nosso técnico. Em breve traremos novidades!`,
     aguardando_peca: `⏳ Identificamos o problema! Estamos aguardando a chegada da peça necessária para concluir o reparo.`,
-    em_bancada: `🔧 Ótimas notícias! Seu *${os.device_label}* já está na bancada sendo consertado.`,
+    em_bancada: `🔧 Ótimas notícias! Seu *${os.deviceLabel}* já está na bancada sendo consertado.`,
     pronto: `✅ *Seu aparelho está pronto para retirada!*\n\nPasse na loja no horário de funcionamento. Não esqueça de trazer este comprovante.`,
-    entregue: `🎉 Obrigado pela preferência, *${os.customer_nome}*! Esperamos ter te atendido bem. Em caso de dúvidas sobre a garantia, é só nos chamar.`,
+    entregue: `🎉 Obrigado pela preferência, *${os.customerNome}*! Esperamos ter te atendido bem. Em caso de dúvidas sobre a garantia, é só nos chamar.`,
   };
 
   const statusText = statusMessages[novoStatus] || `Status atualizado para: ${novoStatus}`;
 
   const message =
-    `Olá, *${os.customer_nome}*! 📱\n\n` +
-    `Atualização da sua *OS #${os.numero_os}* — *${os.device_label}*:\n\n` +
+    `Olá, *${os.customerNome}*! 📱\n\n` +
+    `Atualização da sua *OS #${os.numeroOs}* — *${os.deviceLabel}*:\n\n` +
     `${statusText}\n\n` +
-    `Acompanhe pelo link: ${publicBaseUrl}/os/${os.numero_os}`;
+    `Acompanhe pelo link: ${publicBaseUrl}/os/${os.numeroOs}`;
 
   return sendWhatsAppMessage({
     tenantId,
-    phone: os.customer_telefone,
+    phone: os.customerTelefone,
     message,
     messageType: 'status_update',
     osId: os.id,
@@ -108,20 +108,20 @@ export const notifyOrcamento = async (
   const formatBRL = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const message =
-    `Olá, *${os.customer_nome}*! 💰\n\n` +
-    `O diagnóstico do seu *${os.device_label}* foi concluído.\n\n` +
-    `📋 *Orçamento OS #${os.numero_os}*\n` +
+    `Olá, *${os.customerNome}*! 💰\n\n` +
+    `O diagnóstico do seu *${os.deviceLabel}* foi concluído.\n\n` +
+    `📋 *Orçamento OS #${os.numeroOs}*\n` +
     `🔧 Mão de obra: *${formatBRL(valorMaoObra)}*\n` +
     `🔩 Peças: *${formatBRL(valorPecas)}*\n` +
     `💵 *Total: ${formatBRL(total)}*\n\n` +
     (observacoes ? `📝 ${observacoes}\n\n` : '') +
     `Para *aprovar ou recusar* o orçamento, acesse:\n` +
-    `👉 ${publicBaseUrl}/os/${os.numero_os}\n\n` +
+    `👉 ${publicBaseUrl}/os/${os.numeroOs}\n\n` +
     `O orçamento é válido por 5 dias úteis.`;
 
   return sendWhatsAppMessage({
     tenantId,
-    phone: os.customer_telefone,
+    phone: os.customerTelefone,
     message,
     messageType: 'orcamento',
     osId: os.id,

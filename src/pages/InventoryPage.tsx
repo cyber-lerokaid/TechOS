@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Search, Plus, Package, Download, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
-import { useAuth } from '@/app/providers/AuthContext';
-import { MOCK_PRODUCTS, formatBRL } from '@/data/mock-data';
+import { useQueryClient } from '@tanstack/react-query';
+import { useInventoryList } from '@/shared/lib/hooks/inventory/useInventoryList';
+import { inventoryApi } from '@/shared/lib/api/inventory.api';
+import { formatBRL } from '@/data/mock-data';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -13,14 +15,16 @@ import { Modal } from '@/components/ui/Modal';
 import { cn } from '@/lib/cn';
 
 const InventoryPage = () => {
-  const { isDemoMode } = useAuth();
+  
   type Tab = 'estoque' | 'vitrine' | 'movimentacoes';
   const [activeTab, setActiveTab] = useState<Tab>('estoque');
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewProductModalOpen, setIsNewProductModalOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string>('todos');
 
-  const [localProducts, setLocalProducts] = useState(isDemoMode ? MOCK_PRODUCTS : []);
+  const queryClient = useQueryClient();
+  const { data: remoteProducts } = useInventoryList();
+  const localProducts = remoteProducts || [];
   const [isBaixaModalOpen, setIsBaixaModalOpen] = useState(false);
   const [isEntradaModalOpen, setIsEntradaModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -55,65 +59,67 @@ const InventoryPage = () => {
     return (((venda - custo) / venda) * 100).toFixed(1);
   };
 
-  const handleBaixa = (e: React.FormEvent) => {
+  const handleBaixa = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProduct) return;
     
-    setLocalProducts(prev => prev.map(p => {
-      if (p.id === selectedProduct.id) {
-        return { ...p, quantidade_estoque: Math.max(0, p.quantidade_estoque - baixaQtd) };
-      }
-      return p;
-    }));
+    try {
+      const newQty = Math.max(0, selectedProduct.quantidadeEstoque - baixaQtd);
+      await inventoryApi.updateInventoryItem(selectedProduct.id, { quantidadeEstoque: newQty });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      
+      setMovimentacoes(prev => [
+        {
+          id: `m_new_${Date.now()}`,
+          tipo: 'saida',
+          produto: selectedProduct.nome,
+          quantidade: baixaQtd,
+          motivo: baixaMotivo,
+          data: new Date().toISOString()
+        },
+        ...prev
+      ]);
 
-    setMovimentacoes(prev => [
-      {
-        id: `m_new_${Date.now()}`,
-        tipo: 'saida',
-        produto: selectedProduct.nome,
-        quantidade: baixaQtd,
-        motivo: baixaMotivo,
-        data: new Date().toISOString()
-      },
-      ...prev
-    ]);
-
-    setIsBaixaModalOpen(false);
-    setSelectedProduct(null);
-    setBaixaQtd(1);
+      setIsBaixaModalOpen(false);
+      setSelectedProduct(null);
+      setBaixaQtd(1);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleEntrada = (e: React.FormEvent) => {
+  const handleEntrada = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProduct) return;
     
-    setLocalProducts(prev => prev.map(p => {
-      if (p.id === selectedProduct.id) {
-        return { ...p, quantidade_estoque: p.quantidade_estoque + entradaQtd };
-      }
-      return p;
-    }));
+    try {
+      const newQty = selectedProduct.quantidadeEstoque + entradaQtd;
+      await inventoryApi.updateInventoryItem(selectedProduct.id, { quantidadeEstoque: newQty });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
 
-    setMovimentacoes(prev => [
-      {
-        id: `m_new_ent_${Date.now()}`,
-        tipo: 'entrada',
-        produto: selectedProduct.nome,
-        quantidade: entradaQtd,
-        motivo: entradaMotivo,
-        data: new Date().toISOString()
-      },
-      ...prev
-    ]);
+      setMovimentacoes(prev => [
+        {
+          id: `m_new_ent_${Date.now()}`,
+          tipo: 'entrada',
+          produto: selectedProduct.nome,
+          quantidade: entradaQtd,
+          motivo: entradaMotivo,
+          data: new Date().toISOString()
+        },
+        ...prev
+      ]);
 
-    setIsEntradaModalOpen(false);
-    setSelectedProduct(null);
-    setEntradaQtd(1);
+      setIsEntradaModalOpen(false);
+      setSelectedProduct(null);
+      setEntradaQtd(1);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const getGiro = (produto: any): { label: string; color: string } => {
-    const margin = Number(getMargin(produto.preco_custo, produto.preco_venda));
-    const stock = produto.quantidade_estoque;
+    const margin = Number(getMargin(produto.precoCusto, produto.precoVenda));
+    const stock = produto.quantidadeEstoque;
     if (stock <= 3 && margin > 30) return { label: 'Alto', color: 'rgba(34,197,94,0.85)' };
     if (stock > 15) return { label: 'Baixo', color: 'rgba(239,68,68,0.85)' };
     return { label: 'Médio', color: 'rgba(245,158,11,0.85)' };
@@ -122,8 +128,8 @@ const InventoryPage = () => {
   const exportCSV = () => {
     const headers = ['Nome', 'SKU', 'Categoria', 'Estoque', 'Custo', 'Venda', 'Margem%'];
     const rows = localProducts.map(p => [
-      p.nome, p.sku, p.categoria, p.quantidade_estoque,
-      p.preco_custo, p.preco_venda, getMargin(p.preco_custo, p.preco_venda)
+      p.nome, p.sku, p.categoria, p.quantidadeEstoque,
+      p.precoCusto, p.precoVenda, getMargin(p.precoCusto, p.precoVenda)
     ]);
     const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -132,9 +138,9 @@ const InventoryPage = () => {
     URL.revokeObjectURL(url);
   };
 
-  const totalEstoque = filteredProducts.reduce((acc, p) => acc + (p.preco_custo * p.quantidade_estoque), 0);
-  const totalVenda = filteredProducts.reduce((acc, p) => acc + (p.preco_venda * p.quantidade_estoque), 0);
-  const itensCriticos = filteredProducts.filter(p => p.estoque_critico || p.quantidade_estoque <= (p.estoque_minimo || 3)).length;
+  const totalEstoque = filteredProducts.reduce((acc, p) => acc + (p.precoCusto * p.quantidadeEstoque), 0);
+  const totalVenda = filteredProducts.reduce((acc, p) => acc + (p.precoVenda * p.quantidadeEstoque), 0);
+  const itensCriticos = filteredProducts.filter(p => p.estoqueCritico || p.quantidadeEstoque <= (p.estoqueMinimo || 3)).length;
 
   return (
     <DashboardLayout>
@@ -273,7 +279,7 @@ const InventoryPage = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredProducts.map(p => {
-                      const margin = getMargin(p.preco_custo, p.preco_venda);
+                      const margin = getMargin(p.precoCusto, p.precoVenda);
                       return (
                         <TableRow key={p.id} className="cursor-pointer group">
                           <TableCell className="font-semibold text-foreground flex items-center gap-3">
@@ -287,11 +293,11 @@ const InventoryPage = () => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                               <span style={{
                                 fontSize: 13, fontWeight: 600,
-                                color: p.estoque_critico ? 'rgba(239,68,68,0.9)' : 'rgba(255,255,255,0.75)',
+                                color: p.estoqueCritico ? 'rgba(239,68,68,0.9)' : 'rgba(255,255,255,0.75)',
                               }}>
-                                {p.quantidade_estoque}
+                                {p.quantidadeEstoque}
                               </span>
-                              {p.estoque_critico && (
+                              {p.estoqueCritico && (
                                 <span style={{
                                   fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 10,
                                   background: 'rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.8)',
@@ -302,8 +308,8 @@ const InventoryPage = () => {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell className="font-medium">{formatBRL(p.preco_custo)}</TableCell>
-                          <TableCell className="font-bold">{formatBRL(p.preco_venda)}</TableCell>
+                          <TableCell className="font-medium">{formatBRL(p.precoCusto)}</TableCell>
+                          <TableCell className="font-bold">{formatBRL(p.precoVenda)}</TableCell>
                           <TableCell>
                             <span style={{
                               fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
@@ -389,9 +395,9 @@ const InventoryPage = () => {
               {filteredProducts.map(p => (
                 <Card key={p.id} className="overflow-hidden group hover:border-white/20 transition-all hover:shadow-lg bg-surface-2/80 backdrop-blur-xl border-white/5">
                   <div className="h-40 bg-muted/30 flex items-center justify-center relative overflow-hidden">
-                    {p.desconto_vitrine && (
+                    {p.descontoVitrine && (
                       <div className="absolute top-2 right-2 bg-amber-500 text-amber-950 text-[10px] font-bold px-2 py-1 rounded shadow-sm z-10">
-                        -{p.desconto_vitrine}%
+                        -{p.descontoVitrine}%
                       </div>
                     )}
                     <Package className="w-16 h-16 text-muted-foreground/30 group-hover:scale-110 transition-transform duration-500" />
@@ -400,17 +406,17 @@ const InventoryPage = () => {
                     <h3 className="font-semibold text-foreground text-sm line-clamp-2 leading-tight">{p.nome}</h3>
                     <div className="flex justify-between items-end mt-4">
                       <div className="flex flex-col">
-                        {p.desconto_vitrine && (
+                        {p.descontoVitrine && (
                           <span className="text-xs text-muted-foreground line-through font-medium">
-                            {formatBRL(p.preco_venda)}
+                            {formatBRL(p.precoVenda)}
                           </span>
                         )}
                         <span className="text-lg font-bold text-primary tracking-tight">
-                          {formatBRL(p.preco_venda * (1 - (p.desconto_vitrine || 0) / 100))}
+                          {formatBRL(p.precoVenda * (1 - (p.descontoVitrine || 0) / 100))}
                         </span>
                       </div>
-                      <Badge variant={p.quantidade_estoque > 0 ? "success" : "destructive"} className="scale-90">
-                        {p.quantidade_estoque > 0 ? 'Em estoque' : 'Esgotado'}
+                      <Badge variant={p.quantidadeEstoque > 0 ? "success" : "destructive"} className="scale-90">
+                        {p.quantidadeEstoque > 0 ? 'Em estoque' : 'Esgotado'}
                       </Badge>
                     </div>
                   </CardContent>
@@ -514,12 +520,12 @@ const InventoryPage = () => {
             <Input 
               type="number" 
               min={1} 
-              max={selectedProduct?.quantidade_estoque || 1}
+              max={selectedProduct?.quantidadeEstoque || 1}
               value={baixaQtd}
               onChange={e => setBaixaQtd(Number(e.target.value))}
               required 
             />
-            <p className="text-xs text-muted-foreground">Em estoque: <span className="font-bold text-foreground">{selectedProduct?.quantidade_estoque}</span></p>
+            <p className="text-xs text-muted-foreground">Em estoque: <span className="font-bold text-foreground">{selectedProduct?.quantidadeEstoque}</span></p>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-semibold text-foreground">Motivo da Baixa</label>
@@ -557,7 +563,7 @@ const InventoryPage = () => {
               onChange={e => setEntradaQtd(Number(e.target.value))}
               required 
             />
-            <p className="text-xs text-muted-foreground">Estoque atual: <span className="font-bold text-foreground">{selectedProduct?.quantidade_estoque}</span></p>
+            <p className="text-xs text-muted-foreground">Estoque atual: <span className="font-bold text-foreground">{selectedProduct?.quantidadeEstoque}</span></p>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-semibold text-foreground">Motivo / Origem</label>

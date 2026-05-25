@@ -122,7 +122,7 @@ const MetricCardComponent = ({ metric }: Props) => {
               {metric.trend.isPositive ? '+' : ''}
               {metric.type === 'currency' ? formatValue(metric.trend.value) : metric.trend.value}
               {' '}
-              <span style={{ color: 'rgba(255,255,255,0.25)', fontWeight: 400 }}>hoje</span>
+              <span style={{ color: 'rgba(255,255,255,0.25)', fontWeight: 400 }}>vs ontem</span>
             </span>
           </div>
         ) : <div />}
