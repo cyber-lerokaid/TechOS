@@ -6,6 +6,7 @@ import QuoteApproval from '@/features/public/QuoteApproval';
 import StatusHistoryTimeline from '@/features/public/StatusHistoryTimeline';
 import ReactiveShowcase from '@/features/public/ReactiveShowcase';
 import { Phone, AlertCircle } from 'lucide-react';
+import { supabase } from '@/lib/shared/supabase';
 import './PublicOSLink.css';
 
 const PublicOSLink = () => {
@@ -18,22 +19,40 @@ const PublicOSLink = () => {
     // Inject tenant primary color as requested
     document.documentElement.style.setProperty('--color-primary', MOCK_TENANT.cor_primaria);
 
-    // Simulate fetch
-    const fetchOS = () => {
+    const fetchOS = async () => {
       setIsLoading(true);
       setError(null);
-      setTimeout(() => {
-        const found = MOCK_SERVICE_ORDERS.find(o => o.numero_os === osNumber);
-        if (found) {
-          setOs(found);
+      
+      try {
+        // Tentar buscar do Supabase primeiro
+        const { data, error: sbError } = await supabase
+          .from('ordens_de_servico')
+          .select('*')
+          .eq('numero_os', osNumber)
+          .single();
+        
+        if (sbError || !data) {
+          // Fallback: buscar nos dados mockados (modo demo)
+          const found = MOCK_SERVICE_ORDERS.find(o => o.numero_os === osNumber);
+          if (found) {
+            setOs(found);
+          } else {
+            setError('Ordem de serviço não encontrada.');
+          }
         } else {
-          setError('Ordem de serviço não encontrada. Verifique o link e tente novamente.');
+          setOs(data as ServiceOrder);
         }
+      } catch {
+        // Fallback para mock em caso de erro de conexão
+        const found = MOCK_SERVICE_ORDERS.find(o => o.numero_os === osNumber);
+        if (found) setOs(found);
+        else setError('Ordem de serviço não encontrada.');
+      } finally {
         setIsLoading(false);
-      }, 600); // Perceived performance timing
+      }
     };
 
-    fetchOS();
+    if (osNumber) fetchOS();
   }, [osNumber]);
 
   if (isLoading) {

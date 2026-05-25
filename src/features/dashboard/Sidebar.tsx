@@ -1,15 +1,15 @@
 import { NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, PenSquare, Users, Package, Settings, BarChart2, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, PenSquare, Users, Package, Settings, BarChart2, Archive } from 'lucide-react';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', end: true },
     { path: '/dashboard/ordens', icon: PenSquare, label: 'Ordens de Serviço' },
+    { path: '/dashboard/historico', icon: Archive, label: 'Histórico' },
     { path: '/dashboard/clientes', icon: Users, label: 'Clientes' },
     { path: '/dashboard/estoque', icon: Package, label: 'Estoque' },
     { path: '/dashboard/financeiro', icon: BarChart2, label: 'Financeiro' },
-    { path: '/dashboard/whatsapp', icon: MessageSquare, label: 'WhatsApp', highlight: true },
     { path: '/dashboard/configuracoes', icon: Settings, label: 'Configurações' },
   ];
 
@@ -18,10 +18,10 @@ const Sidebar = () => {
       <div className="sidebar-header">
         <Link to="/" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', textDecoration: 'none' }}>
           <div className="sidebar-logo">
-            <img src="/images/logo-techos.png" alt="TechOS Logo" />
+            <img src="/images/logo-web.png" alt="TechOS Logo" />
           </div>
           <div className="sidebar-title">
-            TechOS
+            <span className="color-tech">TECH</span><span className="color-os">OS</span>
           </div>
           <div className="sidebar-subtitle">
             Operational System
@@ -40,7 +40,7 @@ const Sidebar = () => {
             >
               <item.icon className="nav-icon" />
               <span style={{ flex: 1, zIndex: 10, position: 'relative' }}>{item.label}</span>
-              {item.highlight && (
+              {(item as any).highlight && (
                 <span className="nav-dot"></span>
               )}
             </NavLink>

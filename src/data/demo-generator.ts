@@ -1,154 +1,144 @@
+import { fakerPT_BR as faker } from '@faker-js/faker';
 import type { ServiceOrder, Customer } from './mock-data';
 
 export interface DemoScenario {
   customer: Customer;
   os: ServiceOrder;
-  consumed_product?: string; // id do produto consumido
 }
 
-const TECH_PROBLEMS = [
-  {
-    device_tipo: 'celular' as const,
-    device_label: 'Samsung Galaxy S23',
-    problema: 'Tela trincada após queda, touch não responde no canto inferior direito.',
-    status: 'aguardando_peca' as const,
-    valor_mao_obra: 80,
-    valor_pecas: 180,
-    technician_nome: 'Breno Tavares',
-    technician_id: 'user_002',
-    checklist: [
-      { label: 'Carregador', marcado: true },
-      { label: 'Capa protetora', marcado: true },
-      { label: 'Caixa original', marcado: false },
-      { label: 'Memória externa', marcado: false },
-    ]
-  },
-  {
-    device_tipo: 'notebook' as const,
-    device_label: 'Dell Inspiron 15 3520',
-    problema: 'Notebook extremamente lento, demora 15 minutos para inicializar. HD provavelmente falhando.',
-    status: 'em_bancada' as const,
-    valor_mao_obra: 120,
-    valor_pecas: 219.90,
-    technician_nome: 'Ricardo Souza',
-    technician_id: 'user_001',
-    checklist: [
-      { label: 'Carregador', marcado: true },
-      { label: 'Capa protetora', marcado: false },
-      { label: 'Caixa original', marcado: false },
-      { label: 'Memória externa', marcado: false },
-    ]
-  },
-  {
-    device_tipo: 'desktop' as const,
-    device_label: 'PC Gamer Customizado',
-    problema: 'Tela azul na inicialização (BSOD). Suspeita de falha na memória RAM ou HD corrompido.',
-    status: 'em_analise' as const,
-    valor_mao_obra: null,
-    valor_pecas: null,
-    technician_nome: 'Ricardo Souza',
-    technician_id: 'user_001',
-    checklist: [
-      { label: 'Carregador', marcado: false },
-      { label: 'Capa protetora', marcado: false },
-      { label: 'Caixa original', marcado: false },
-      { label: 'Memória externa', marcado: true },
-    ]
-  },
-  {
-    device_tipo: 'celular' as const,
-    device_label: 'iPhone 14 Pro',
-    problema: 'Bateria vicia rapidamente, carrega 100% mas descarrega em 2 horas. Precisa trocar a bateria.',
-    status: 'pronto' as const,
-    valor_mao_obra: 90,
-    valor_pecas: 140,
-    technician_nome: 'Breno Tavares',
-    technician_id: 'user_002',
-    checklist: [
-      { label: 'Carregador', marcado: true },
-      { label: 'Capa protetora', marcado: false },
-      { label: 'Caixa original', marcado: false },
-      { label: 'Memória externa', marcado: false },
-    ]
-  },
-  {
-    device_tipo: 'notebook' as const,
-    device_label: 'Lenovo IdeaPad 3i',
-    problema: 'Teclado com várias teclas travadas após derramar água. Necessário substituição do teclado.',
-    status: 'orcamento_enviado' as const,
-    valor_mao_obra: 100,
-    valor_pecas: 160,
-    technician_nome: 'Breno Tavares',
-    technician_id: 'user_002',
-    checklist: [
-      { label: 'Carregador', marcado: true },
-      { label: 'Capa protetora', marcado: false },
-      { label: 'Caixa original', marcado: false },
-      { label: 'Memória externa', marcado: false },
-    ]
-  },
+const DISPOSITIVOS_POSSIVEIS = [
+  { tipo: 'celular' as const, label: 'iPhone 14 Pro' },
+  { tipo: 'celular' as const, label: 'Samsung Galaxy S23' },
+  { tipo: 'notebook' as const, label: 'Dell Inspiron 15' },
+  { tipo: 'notebook' as const, label: 'MacBook Air M1' },
+  { tipo: 'celular' as const, label: 'Xiaomi Redmi Note 12' },
+  { tipo: 'outro' as const, label: 'PlayStation 5' },
 ];
 
-const DEMO_CUSTOMERS_DATA = [
-  { nome: 'Ana Clara Mendes', telefone: '(92) 99201-1123', email: 'anaclara@gmail.com' },
-  { nome: 'Bruno Henrique Silva', telefone: '(92) 98734-5591', email: null },
-  { nome: 'Carla Beatriz Souza', telefone: '(92) 99654-3312', email: 'carlabs@outlook.com' },
-  { nome: 'Diego Ferreira Lima', telefone: '(92) 98201-7734', email: null },
-  { nome: 'Eduarda Costa Rocha', telefone: '(92) 99312-9901', email: 'eduarda.rocha@gmail.com' },
+const CONTEXTOS = [
+  "Começou a apresentar problema ontem",
+  "Parou de funcionar de repente",
+  "Após uma queda recente",
+  "Depois de uma atualização",
+  "Já vem apresentando falhas há alguns dias",
+  "O cliente relatou que o aparelho",
+  "Celular caiu recentemente e desde então"
 ];
+
+const SINTOMAS = [
+  "não liga",
+  "não carrega",
+  "fica reiniciando",
+  "esquenta muito mesmo sem estar rodando nada pesado",
+  "a tela não responde em algumas partes",
+  "desliga sozinho após alguns minutos de uso",
+  "não reconhece nenhum controle"
+];
+
+const DETALHES = [
+  "às vezes dá sinal e depois para",
+  "fica travado na tela inicial",
+  "emite um leve aquecimento",
+  "funciona por alguns minutos e desliga",
+  "a tela pisca ocasionalmente",
+  "apresenta lentidão extrema"
+];
+
+const TENTATIVAS = [
+  "já tentou trocar o carregador",
+  "reiniciou várias vezes",
+  "testou com outro cabo, mas continua sem resposta",
+  "tentou restaurar o sistema",
+  "não fez nenhum teste ainda",
+  "já tentou resetar, sem sucesso"
+];
+
+const gerarRelatoRealista = () => {
+  const contexto = faker.helpers.arrayElement(CONTEXTOS);
+  const sintoma = faker.helpers.arrayElement(SINTOMAS);
+  const detalhe = faker.helpers.arrayElement(DETALHES);
+  const tentativa = faker.helpers.arrayElement(TENTATIVAS);
+
+  // Variação no tamanho do relato (nem todos precisam de todos os blocos)
+  const formato = faker.number.int({ min: 1, max: 3 });
+
+  if (formato === 1) {
+    return `${contexto}. O aparelho ${sintoma} e ${detalhe}. Cliente informou que ${tentativa}.`;
+  } else if (formato === 2) {
+    return `O aparelho ${sintoma}. ${contexto}, e agora ${detalhe}. Já ${tentativa}.`;
+  } else {
+    return `${contexto}, ${sintoma}. ${detalhe.charAt(0).toUpperCase() + detalhe.slice(1)}.`;
+  }
+};
 
 export const generateFullDemoScenarios = (): DemoScenario[] => {
-  const now = new Date();
+  return Array.from({ length: 5 }, () => gerarClienteFake());
+};
+
+const gerarClienteFake = (): DemoScenario => {
+  const customerId = faker.string.uuid();
+  const osId = faker.string.uuid();
   
-  return DEMO_CUSTOMERS_DATA.map((customerData, i) => {
-    const problem = TECH_PROBLEMS[i];
-    const customerId = `demo_cust_${i}_${Date.now()}`;
-    const osId = `demo_os_${i}_${Date.now()}`;
-    const hoursAgo = [26, 10, 2, 42, 3][i];
-    const createdAt = new Date(now.getTime() - hoursAgo * 3600000).toISOString();
+  const createdAt = faker.date.recent({ days: 3 }).toISOString();
+  
+  const nome = faker.person.fullName();
+  const dddsPossiveis = [11, 15, 19, 21, 31, 41, 47, 51, 61, 71, 81, 85, 91, 92];
+  const ddd = faker.helpers.arrayElement(dddsPossiveis);
+  const numero = `9${faker.string.numeric(4)}-${faker.string.numeric(4)}`;
+  const telefone = `(${ddd}) ${numero}`;
+  const email = faker.datatype.boolean() ? faker.internet.email({ firstName: nome.split(' ')[0] }).toLowerCase() : null;
+  
+  const dispositivo = faker.helpers.arrayElement(DISPOSITIVOS_POSSIVEIS);
+  const problema = gerarRelatoRealista();
+  
+  // Valores realistas em BRL
+  const valorTotal = faker.number.int({ min: 10, max: 100 }) * 10; // ex: 150, 420, 990
+  const maoObra = Math.floor(valorTotal * 0.4);
+  const pecas = valorTotal - maoObra;
+  
+  const numero_os = faker.number.int({ min: 1000, max: 9999 }).toString();
+  const hoursAgo = faker.number.int({ min: 0, max: 24 });
 
-    const customer: Customer = {
-      id: customerId,
-      tenant_id: 'demo-tenant',
-      nome: customerData.nome,
-      telefone: customerData.telefone,
-      email: customerData.email,
-      total_gasto: problem.valor_mao_obra && problem.valor_pecas
-        ? problem.valor_mao_obra + problem.valor_pecas
-        : 0,
-      total_os: 1,
-      criado_em: createdAt,
-    };
+  const customer: Customer = {
+    id: customerId,
+    tenant_id: 'demo-tenant',
+    nome,
+    telefone,
+    email,
+    total_gasto: valorTotal,
+    total_os: 1,
+    criado_em: createdAt,
+  };
 
-    const os: ServiceOrder = {
-      id: osId,
-      tenant_id: 'demo-tenant',
-      customer_id: customerId,
-      customer_nome: customerData.nome,
-      customer_telefone: customerData.telefone,
-      device_id: `demo_dev_${i}`,
-      device_label: problem.device_label,
-      device_tipo: problem.device_tipo,
-      technician_id: problem.technician_id,
-      technician_nome: problem.technician_nome,
-      numero_os: (50 + i).toString().padStart(4, '0'),
-      status: problem.status,
-      problema_relatado: problem.problema,
-      fotos_checkin: [],
-      checklist_itens: problem.checklist,
-      assinatura_url: `assinatura_demo_${i}.png`,
-      valor_mao_obra: problem.valor_mao_obra || null,
-      valor_pecas: problem.valor_pecas || null,
-      aprovado_em: problem.status !== 'em_analise' && problem.status !== 'orcamento_enviado'
-        ? new Date(now.getTime() - (hoursAgo - 1) * 3600000).toISOString()
-        : null,
-      garantia_dias: 90,
-      garantia_expira_em: null,
-      criado_em: createdAt,
-      atualizado_em: new Date(now.getTime() - Math.floor(hoursAgo / 2) * 3600000).toISOString(),
-      horas_abertas: hoursAgo,
-    };
+  const os: ServiceOrder = {
+    id: osId,
+    tenant_id: 'demo-tenant',
+    customer_id: customerId,
+    customer_nome: nome,
+    customer_telefone: telefone,
+    device_id: faker.string.uuid(),
+    device_label: dispositivo.label,
+    device_tipo: dispositivo.tipo,
+    technician_id: faker.helpers.arrayElement(['user_001', 'user_002']),
+    technician_nome: faker.helpers.arrayElement(['Ricardo Souza', 'Breno Tavares']),
+    numero_os,
+    status: 'em_analise', // Sempre cai em "Em Análise"
+    problema_relatado: problema,
+    fotos_checkin: [],
+    checklist_itens: [
+      { label: 'Carregador', marcado: faker.datatype.boolean() },
+      { label: 'Capa protetora', marcado: faker.datatype.boolean() },
+    ],
+    assinatura_url: `assinatura_demo_${faker.string.alphanumeric(4)}.png`,
+    valor_mao_obra: maoObra,
+    valor_pecas: pecas,
+    aprovado_em: null,
+    garantia_dias: 90,
+    garantia_expira_em: null,
+    criado_em: createdAt,
+    atualizado_em: createdAt,
+    horas_abertas: hoursAgo,
+  };
 
-    return { customer, os };
-  });
+  return { customer, os };
 };

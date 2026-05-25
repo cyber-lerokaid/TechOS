@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, PenSquare, Users, Package, BarChart2 } from 'lucide-react';
-import { cn } from '@/shared/utils/cn';
+import { cn } from '@/lib/cn';
 
 const BottomNav = () => {
   const navItems = [
@@ -12,7 +12,7 @@ const BottomNav = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border/50 pb-safe">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface-2/80 backdrop-blur-xl border-t border-white/5 pb-safe">
       <div className="flex items-center justify-around px-2 py-2">
         {navItems.map((item) => (
           <NavLink

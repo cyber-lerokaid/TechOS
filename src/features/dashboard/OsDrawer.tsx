@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { X, Check, FileText, CheckCircle2, Image as ImageIcon } from 'lucide-react';
-import { supabase } from '@/shared/lib/supabase';
+import { X, Check, FileText, CheckCircle2, Image as ImageIcon, ArrowRight, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/shared/supabase';
 import { useAuth } from '@/app/providers/AuthContext';
-import { type ServiceOrder } from '@/data/mock-data';
-import { fetchOrdensServico } from '@/shared/services/osService';
-import { Badge } from '@/shared/ui/Badge';
+import { type ServiceOrder, STATUS_CONFIG, type OSStatus, MOCK_STATUS_HISTORY } from '@/data/mock-data';
+import { fetchOrdensServico } from '@/lib/services/osService';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { QuoteModal } from './QuoteModal';
 import { formatBRL } from '@/data/mock-data';
 
@@ -19,6 +20,42 @@ export const OsDrawer = ({ osId, onClose }: OsDrawerProps) => {
   const [loading, setLoading] = useState(false);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [newStatus, setNewStatus] = useState<OSStatus | ''>('');
+  const [isChangingStatus, setIsChangingStatus] = useState(false);
+
+  const getNextStatuses = (current: OSStatus): OSStatus[] => {
+    const flow: Record<OSStatus, OSStatus[]> = {
+      checkin: ['em_analise', 'orcamento_enviado'],
+      orcamento_enviado: ['orcamento_aprovado', 'orcamento_recusado'],
+      orcamento_aprovado: ['em_analise', 'aguardando_peca'],
+      orcamento_recusado: [],
+      em_analise: ['aguardando_peca', 'em_bancada', 'orcamento_enviado'],
+      aguardando_peca: ['em_bancada'],
+      em_bancada: ['pronto'],
+      pronto: ['entregue'],
+      entregue: [],
+    };
+    return flow[current] || [];
+  };
+
+  const handleStatusChange = async () => {
+    if (!newStatus || !osData) return;
+    setIsChangingStatus(true);
+    
+    try {
+      if (!isDemoMode) {
+        await supabase.from('ordens_de_servico').update({ status: newStatus }).eq('id', osData.id);
+      }
+      window.dispatchEvent(new CustomEvent('osUpdated'));
+      window.dispatchEvent(new CustomEvent('osStatusChanged', {
+        detail: { os: { ...osData, status: newStatus } }
+      }));
+      onClose();
+    } finally {
+      setIsChangingStatus(false);
+      setNewStatus('');
+    }
+  };
 
   useEffect(() => {
     if (!osId) {
@@ -45,7 +82,7 @@ export const OsDrawer = ({ osId, onClose }: OsDrawerProps) => {
           }
         }
       } catch (err) {
-        console.error("Erro ao buscar detalhes da OS", err);
+        if (import.meta.env.DEV) console.error("Erro ao buscar detalhes da OS", err);
       } finally {
         setLoading(false);
       }
@@ -84,9 +121,9 @@ export const OsDrawer = ({ osId, onClose }: OsDrawerProps) => {
               </>
             )}
           </div>
-          <button onClick={onClose} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full transition-colors">
+          <Button variant="ghost" size="icon" onClick={onClose} className="text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full">
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Main Content */}
@@ -183,29 +220,109 @@ export const OsDrawer = ({ osId, onClose }: OsDrawerProps) => {
                   </div>
                 )}
               </section>
+
+              {/* Mudar Status e Histórico */}
+              <div style={{ marginTop: 20, padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+                  Avançar Status
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {getNextStatuses(osData.status as OSStatus).map(nextStatus => (
+                    <button
+                      key={nextStatus}
+                      onClick={() => setNewStatus(nextStatus)}
+                      style={{
+                        padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                        border: `1px solid ${newStatus === nextStatus ? STATUS_CONFIG[nextStatus]?.cor : 'rgba(255,255,255,0.08)'}`,
+                        background: newStatus === nextStatus ? `${STATUS_CONFIG[nextStatus]?.cor}20` : 'rgba(255,255,255,0.03)',
+                        color: newStatus === nextStatus ? STATUS_CONFIG[nextStatus]?.cor : 'rgba(255,255,255,0.55)',
+                        cursor: 'pointer', transition: 'all 150ms', fontFamily: 'inherit',
+                      }}
+                    >
+                      {STATUS_CONFIG[nextStatus]?.label}
+                    </button>
+                  ))}
+                </div>
+                {newStatus && (
+                  <button
+                    onClick={handleStatusChange}
+                    disabled={isChangingStatus}
+                    style={{
+                      marginTop: 12, width: '100%', padding: '10px', borderRadius: 10,
+                      background: 'rgba(37,99,235,0.8)', color: '#fff',
+                      border: 'none', fontSize: 13, fontWeight: 600,
+                      cursor: isChangingStatus ? 'not-allowed' : 'pointer',
+                      opacity: isChangingStatus ? 0.7 : 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      fontFamily: 'inherit', transition: 'all 150ms',
+                    }}
+                  >
+                    {isChangingStatus ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <ArrowRight size={14} />}
+                    Confirmar mudança de status
+                  </button>
+                )}
+              </div>
+
+              <div style={{ marginTop: 16 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+                  Histórico
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {MOCK_STATUS_HISTORY.filter(h => h.os_id === osData.id).map((hist, i, arr) => (
+                    <div key={hist.id} style={{ display: 'flex', gap: 12, position: 'relative' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                        <div style={{
+                          width: 8, height: 8, borderRadius: '50%', marginTop: 4, flexShrink: 0,
+                          background: STATUS_CONFIG[hist.status_novo as OSStatus]?.cor || 'rgba(255,255,255,0.3)',
+                        }} />
+                        {i < arr.length - 1 && (
+                          <div style={{ width: 1, flex: 1, background: 'rgba(255,255,255,0.06)', marginTop: 2 }} />
+                        )}
+                      </div>
+                      <div style={{ paddingBottom: 16, flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: STATUS_CONFIG[hist.status_novo as OSStatus]?.cor || 'rgba(255,255,255,0.6)' }}>
+                            {STATUS_CONFIG[hist.status_novo as OSStatus]?.label}
+                          </span>
+                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)' }}>
+                            {new Date(hist.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) }
+                          </span>
+                        </div>
+                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>por {hist.changed_by_nome}</span>
+                        {hist.nota_publica && (
+                          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.50)', marginTop: 4, lineHeight: 1.5 }}>{hist.nota_publica}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {MOCK_STATUS_HISTORY.filter(h => h.os_id === osData.id).length === 0 && (
+                    <div className="text-zinc-500 text-sm italic">Nenhum histórico disponível para esta OS no momento.</div>
+                  )}
+                </div>
+              </div>
             </>
           )}
         </div>
 
         {/* Footer */}
         <div className="p-6 border-t border-zinc-800 bg-zinc-950 flex justify-end gap-4">
-          <button className="px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 transition-colors text-sm font-medium">
+          <Button variant="outline">
             Gerar PDF da OS
-          </button>
+          </Button>
           
           {osData && osData.status === 'em_analise' && (
-            <button 
+            <Button 
               onClick={() => setIsQuoteModalOpen(true)}
-              className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white transition-colors text-sm font-medium shadow-lg shadow-green-900/20 flex items-center gap-2"
+              className="bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20 gap-2"
             >
               💰 Criar Orçamento
-            </button>
+            </Button>
           )}
 
           {osData && osData.status !== 'em_analise' && osData.status !== 'pronto' && osData.status !== 'entregue' && (
-            <button className="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white transition-colors text-sm font-medium shadow-lg shadow-cyan-900/20">
+            <Button className="bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-900/20" onClick={() => setNewStatus('pronto')}>
               Alterar Status para Pronta
-            </button>
+            </Button>
           )}
         </div>
       </div>

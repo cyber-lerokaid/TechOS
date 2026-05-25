@@ -1,22 +1,46 @@
-import { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import { useState, useEffect, useMemo } from 'react';
 import { Laptop, Smartphone, Monitor, Tablet, Wrench, Clock } from 'lucide-react';
 import { type OSStatus, type ServiceOrder, STATUS_CONFIG } from '@/data/mock-data';
-import { formatTimeAgo } from '@/shared/utils';
+import { formatTimeAgo } from '@/lib';
 import { NotifyModal } from './NotifyModal';
-import { Avatar } from '@/shared/ui/Avatar';
+import { Avatar } from '@/components/ui/Avatar';
 import { OsDrawer } from './OsDrawer';
 import { useAuth } from '@/app/providers/AuthContext';
-import { fetchOrdensServico } from '@/shared/services/osService';
+import { fetchOrdensServico, updateOrdemServico } from '@/lib/services/osService';
 import { formatBRL } from '@/data/mock-data';
+import { Card, CardContent } from '@/components/ui/Card';
 import './KanbanBoard.css';
+
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import type {
+  DragStartEvent,
+  DragOverEvent,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { useDroppable } from '@dnd-kit/core';
 
 const deviceIcons: Record<string, any> = {
   notebook: Laptop,
   celular: Smartphone,
-  desktop: Monitor,
+  monitor: Monitor,
   tablet: Tablet,
-  outro: Wrench,
+  outro: Wrench
 };
 
 const kanbanColumns = [
@@ -26,10 +50,127 @@ const kanbanColumns = [
   { id: 'pronto', title: 'Pronto' }
 ];
 
+function KanbanCard({ os, isOverlay = false, onClick }: { os: ServiceOrder, isOverlay?: boolean, onClick?: () => void }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: os.id, data: { type: 'Card', os } });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging && !isOverlay ? 0.35 : 1,
+    ...(isDragging && !isOverlay ? {
+      border: '1px dashed rgba(37,99,235,0.4)',
+      background: 'rgba(37,99,235,0.04)',
+      boxShadow: 'none',
+      backdropFilter: 'none',
+    } : {}),
+  };
+
+  const DeviceIcon = deviceIcons[os.device_tipo] || Wrench;
+  const isWarning = os.horas_abertas > 48;
+  const statusColor = STATUS_CONFIG[os.status]?.cor || 'var(--color-primary)';
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={() => {
+        if (!isDragging && onClick) {
+          onClick();
+        }
+      }}
+      className={`bg-surface-3/80 backdrop-blur-md border rounded-xl p-4 flex flex-col gap-2 relative hover:bg-surface-3/90 cursor-grab ${isOverlay ? 'z-[9999] shadow-[0_20px_40px_rgba(0,0,0,0.5)] scale-105 border-blue-500/50' : 'border-white/5 hover:border-white/15'}`}
+    >
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+        background: statusColor,
+        opacity: isOverlay ? 1 : 0.6,
+        borderRadius: '12px 12px 0 0',
+      }} />
+
+      <div className="flex justify-between items-center">
+        <span style={{ fontSize: 11, fontWeight: 700, color: statusColor, fontFamily: 'monospace', letterSpacing: '0.03em' }}>
+          #{os.numero_os}
+        </span>
+        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)', display: 'flex', alignItems: 'center', gap: 3 }}>
+          <Clock size={9} />
+          {formatTimeAgo(os.atualizado_em)}
+        </span>
+      </div>
+
+      <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.88)', lineHeight: 1.3 }}>
+        {os.customer_nome}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'rgba(255,255,255,0.38)' }}>
+        <DeviceIcon size={11} />
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {os.device_label}
+        </span>
+      </div>
+
+      {(os.valor_mao_obra || os.valor_pecas) ? (
+        <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(34,197,94,0.85)', letterSpacing: '-0.01em' }}>
+          {formatBRL((os.valor_mao_obra || 0) + (os.valor_pecas || 0))}
+        </div>
+      ) : (
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.20)', fontStyle: 'italic' }}>
+          Sem orçamento
+        </div>
+      )}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 2 }}>
+        <Avatar name={os.customer_nome} className="w-5 h-5 text-[9px]" />
+        {isWarning && (
+          <span style={{ fontSize: 9, color: 'rgba(245,158,11,0.8)', display: 'flex', alignItems: 'center', gap: 2, fontWeight: 600 }}>
+            <Clock size={9} />
+            {os.horas_abertas}h sem update
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function KanbanColumn({ column, orders, onCardClick }: { column: any, orders: ServiceOrder[], onCardClick: (id: string) => void }) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+    data: { type: 'Column', column }
+  });
+
+  return (
+    <Card className={`border-white/5 bg-surface-2/80 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] flex flex-col max-h-[60vh] overflow-hidden transition-colors ${isOver ? 'bg-blue-500/10 border-blue-500/50' : ''}`}>
+      <CardContent className="p-4 flex flex-col h-full gap-4 overflow-hidden">
+        <div className="flex justify-between items-center shrink-0 mb-1">
+          <h3 className="text-[13px] font-medium text-[#e6edf3]">{column.title}</h3>
+          <span className="bg-white/5 text-[#9da7b3] text-[11px] px-1.5 py-0.5 rounded font-medium">
+            {orders.length}
+          </span>
+        </div>
+
+        <div ref={setNodeRef} className="flex-1 overflow-y-auto pr-1 space-y-3 pb-2 min-h-[100px] scrollbar-hide">
+          <SortableContext items={orders.map(o => o.id)} strategy={verticalListSortingStrategy}>
+            {orders.map(os => (
+              <KanbanCard key={os.id} os={os} onClick={() => onCardClick(os.id)} />
+            ))}
+          </SortableContext>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 const KanbanBoard = () => {
   const { isDemoMode } = useAuth();
   const [orders, setOrders] = useState<ServiceOrder[]>([]);
-  const [isReady, setIsReady] = useState(false);
   const [selectedOsId, setSelectedOsId] = useState<string | null>(null);
   const [modalData, setModalData] = useState<{ isOpen: boolean; os: ServiceOrder | null; newStatus: OSStatus | null }>({
     isOpen: false,
@@ -37,11 +178,13 @@ const KanbanBoard = () => {
     newStatus: null
   });
 
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [originalStatus, setOriginalStatus] = useState<OSStatus | null>(null);
+
   useEffect(() => {
     const loadOrders = async () => {
       const data = await fetchOrdensServico(isDemoMode);
       setOrders(data);
-      setIsReady(true);
     };
 
     loadOrders();
@@ -53,172 +196,137 @@ const KanbanBoard = () => {
     };
   }, [isDemoMode]);
 
-  useEffect(() => {
-    const handleGenerate = () => {
-      if (isDemoMode) {
-        window.dispatchEvent(new CustomEvent('osUpdated'));
-      }
-    };
-    window.addEventListener('generateDemoData', handleGenerate);
-    return () => window.removeEventListener('generateDemoData', handleGenerate);
-  }, [isDemoMode]);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-  const onDragEnd = (result: DropResult) => {
-    const { destination, source, draggableId } = result;
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+    const os = orders.find(o => o.id === event.active.id);
+    if (os) setOriginalStatus(os.status);
+  };
 
-    if (!destination) return;
-    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
 
-    const draggedOrderIndex = orders.findIndex(os => os.id === draggableId);
-    if (draggedOrderIndex === -1) return;
+    const activeId = active.id;
+    const overId = over.id;
 
-    const newOrders = [...orders];
-    const draggedOrder = newOrders[draggedOrderIndex];
-    
-    newOrders.splice(draggedOrderIndex, 1);
-    
-    let targetIndex = 0;
-    let destCount = 0;
-    
-    for (let i = 0; i < newOrders.length; i++) {
-      if (newOrders[i].status === destination.droppableId) {
-        if (destCount === destination.index) {
-          targetIndex = i;
-          break;
+    if (activeId === overId) return;
+
+    const isActiveTask = active.data.current?.type === 'Card';
+    const isOverTask = over.data.current?.type === 'Card';
+    const isOverColumn = over.data.current?.type === 'Column';
+
+    if (!isActiveTask) return;
+
+    if (isActiveTask && isOverTask) {
+      setOrders(orders => {
+        const activeIndex = orders.findIndex(t => t.id === activeId);
+        const overIndex = orders.findIndex(t => t.id === overId);
+
+        if (orders[activeIndex].status !== orders[overIndex].status) {
+          const newOrders = [...orders];
+          newOrders[activeIndex] = { ...newOrders[activeIndex], status: newOrders[overIndex].status };
+          return arrayMove(newOrders, activeIndex, overIndex);
         }
-        destCount++;
-      }
-      if (i === newOrders.length - 1) {
-        targetIndex = newOrders.length;
-      }
-    }
 
-    if (destination.droppableId !== source.droppableId) {
-      draggedOrder.status = destination.droppableId as OSStatus;
-      draggedOrder.atualizado_em = new Date().toISOString();
-      draggedOrder.horas_abertas = 0; 
-      
-      setModalData({
-        isOpen: true,
-        os: draggedOrder,
-        newStatus: destination.droppableId as OSStatus
+        return arrayMove(orders, activeIndex, overIndex);
       });
     }
 
-    newOrders.splice(targetIndex, 0, draggedOrder);
-    setOrders(newOrders);
+    if (isActiveTask && isOverColumn) {
+      setOrders(orders => {
+        const activeIndex = orders.findIndex(t => t.id === activeId);
+        const newStatus = overId as OSStatus;
+        if (orders[activeIndex].status !== newStatus) {
+          const newOrders = [...orders];
+          newOrders[activeIndex] = { ...newOrders[activeIndex], status: newStatus };
+          return newOrders;
+        }
+        return orders;
+      });
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveId(null);
+    const { active, over } = event;
+
+    if (!over) {
+      if (originalStatus) {
+        setOrders(prev => prev.map(o => o.id === active.id ? { ...o, status: originalStatus } : o));
+      }
+      setOriginalStatus(null);
+      return;
+    }
+
+    const activeOs = orders.find(o => o.id === active.id);
+
+    if (activeOs && originalStatus && activeOs.status !== originalStatus) {
+      const newStatus = activeOs.status;
+      
+      setModalData({
+        isOpen: true,
+        os: activeOs,
+        newStatus: newStatus as OSStatus
+      });
+
+      updateOrdemServico(activeOs.id, {
+        status: newStatus,
+        atualizado_em: new Date().toISOString(),
+        horas_abertas: 0
+      }, isDemoMode).catch(e => { if (import.meta.env.DEV) console.error(e); });
+    }
+    setOriginalStatus(null);
   };
 
   const closeNotifyModal = () => {
     setModalData({ isOpen: false, os: null, newStatus: null });
   };
 
-  const handleNotifyCustomer = () => {
-    closeNotifyModal();
-  };
-
-  if (!isReady) return null;
+  const activeOsItem = useMemo(() => orders.find(o => o.id === activeId), [activeId, orders]);
 
   return (
     <>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="kanban-board">
-          {kanbanColumns.map(column => {
-            const columnOrders = orders.filter(os => os.status === column.id);
-
-            return (
-              <div key={column.id} className="kanban-column">
-                <div className="kanban-column-header">
-                  <h3>{column.title}</h3>
-                  <span className="kanban-column-count">
-                    {columnOrders.length}
-                  </span>
-                </div>
-
-                <Droppable droppableId={column.id}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className={`kanban-droppable ${snapshot.isDraggingOver ? 'is-dragging-over' : ''}`}
-                    >
-                      {columnOrders.map((os, index) => {
-                        const DeviceIcon = deviceIcons[os.device_tipo] || Wrench;
-                        const isWarning = os.horas_abertas > 48;
-                        const statusColor = STATUS_CONFIG[os.status]?.cor || 'var(--color-primary)';
-
-                        return (
-                          <Draggable key={os.id} draggableId={os.id} index={index}>
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={`kanban-card ${snapshot.isDragging ? 'is-dragging' : ''} ${isWarning ? 'time-alert' : ''}`}
-                                style={{
-                                  ...provided.draggableProps.style,
-                                  '--status-color': statusColor
-                                } as any}
-                                onClick={() => {
-                                  if (!snapshot.isDragging) setSelectedOsId(os.id);
-                                }}
-                              >
-                                {isWarning && (
-                                  <span title="Sem atualização há mais de 48h" className="time-alert-icon">
-                                    <Clock size={14} />
-                                  </span>
-                                )}
-                                
-                                <div className="kanban-card-header">
-                                  <span className="os-number">#{os.numero_os}</span>
-                                  <span className="os-time">
-                                    <Clock size={11} />
-                                    {formatTimeAgo(os.atualizado_em)}
-                                  </span>
-                                </div>
-                                
-                                <div className="customer-name">{os.customer_nome}</div>
-                                
-                                <div className="device-info">
-                                  <DeviceIcon size={13} />
-                                  <span>{os.device_label}</span>
-                                </div>
-
-                                { (os.valor_mao_obra || os.valor_pecas) && (
-                                  <div className="os-value">
-                                    {formatBRL((os.valor_mao_obra || 0) + (os.valor_pecas || 0))}
-                                  </div>
-                                )}
-
-                                <div className="kanban-card-footer">
-                                  <Avatar name={os.technician_nome} className="w-6 h-6 text-[10px]" />
-                                  <div className="progress-bar" style={{ marginLeft: '10px' }}>
-                                    <div 
-                                      className="progress-fill" 
-                                      style={{ backgroundColor: statusColor, width: '100%' }}
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </Draggable>
-                        );
-                      })}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </div>
-            );
-          })}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="grid grid-cols-4 gap-4 h-full">
+          {kanbanColumns.map(column => (
+            <KanbanColumn 
+              key={column.id} 
+              column={column} 
+              orders={orders.filter(os => os.status === column.id)} 
+              onCardClick={(id) => setSelectedOsId(id)}
+            />
+          ))}
         </div>
-      </DragDropContext>
+
+        <DragOverlay>
+          {activeId && activeOsItem ? (
+            <KanbanCard os={activeOsItem} isOverlay={true} />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
       {modalData.os && modalData.newStatus && (
         <NotifyModal
           isOpen={modalData.isOpen}
           onClose={closeNotifyModal}
-          onNotify={handleNotifyCustomer}
+          onNotify={closeNotifyModal}
           customerName={modalData.os.customer_nome}
           device={modalData.os.device_label}
           newStatus={STATUS_CONFIG[modalData.newStatus].label}

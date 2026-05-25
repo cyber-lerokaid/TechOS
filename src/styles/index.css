@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 240 5% 12%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5% 16%;
+    --input: 240 5% 16%;
+    --ring: 217 91% 60%;
+    
+    --radius: 0.5rem;
+    
+    /* Legacy variables mapping to prevent breaking old components */
+    --surface-base: 240 10% 4%;
+    --surface-1: 240 10% 6%;
+    --surface-2: 240 10% 8%;
+    --surface-floating: 240 10% 12%;
+    --surface-hover: 240 10% 16%;
+    --surface-elevated: 240 10% 20%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Linear-style selection */
+  ::selection {
+    background-color: hsla(217, 91%, 60%, 0.3);
+    color: white;
+  }
+}
+
+/* Linear-style glass panel utilities */
+@layer utilities {
+  .glass-panel {
+    @apply bg-card/60 backdrop-blur-xl border border-white/[0.04] shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)];
+  }
+  
+  .glass-input {
+    @apply bg-muted/30 backdrop-blur-sm border border-white/[0.08] focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/50 transition-colors;
+  }
+  
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

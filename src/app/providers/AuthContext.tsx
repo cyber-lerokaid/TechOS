@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { supabase } from '@/shared/lib/supabase';
+import { supabase } from '@/lib/shared/supabase';
 import { MOCK_LOGGED_USER, MOCK_TENANT } from '@/data/mock-data';
 
 interface AuthContextType {
@@ -73,10 +73,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [isExplicitDemo]);
 
   const signIn = async (email: string, password: string) => {
+    sessionStorage.removeItem('techos_is_demo');
+    setIsExplicitDemo(false);
     return await supabase.auth.signInWithPassword({ email, password });
   };
 
   const signUp = async (email: string, password: string, nome: string) => {
+    sessionStorage.removeItem('techos_is_demo');
+    setIsExplicitDemo(false);
+    
     // Na vida real, criaria o usuário e depois inseria na tabela tenants
     const { data, error } = await supabase.auth.signUp({ 
       email, 
@@ -87,6 +92,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     });
+    
+    // O Supabase, quando configurado para evitar enumeração de email, retorna success mas a propriedade identities vem vazia se o email já estiver em uso.
+    if (data?.user && data.user.identities && data.user.identities.length === 0) {
+      return { error: new Error('Este e-mail já está cadastrado.') };
+    }
+
     if (!error && data.user) {
       // Mock tenant creation
       setTenant({ ...MOCK_TENANT, nome_loja: 'Minha Assistência', telefone: '' });

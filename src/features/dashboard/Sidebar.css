@@ -18,33 +18,56 @@
 }
 
 .sidebar-logo {
-  width: 48px;
-  height: 48px;
+  width: 100%;
+  max-width: 160px;
+  height: auto;
+  max-height: 64px;
+  display: flex;
+  justify-content: center;
 }
 
 .sidebar-logo img {
   width: 100%;
-  height: 100%;
+  height: auto;
+  max-height: 64px;
   object-fit: contain;
 }
 
 .sidebar-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
-  color: var(--text-primary);
   font-family: var(--font-display);
-  letter-spacing: -0.01em;
+  letter-spacing: 0.02em;
   text-align: center;
+  margin-top: 4px;
+}
+
+.color-tech {
+  color: #FFFFFF;
+}
+
+.color-os {
+  color: rgba(96, 165, 250, 0.8);
 }
 
 .sidebar-subtitle {
   font-size: 9px;
   font-weight: 600;
-  color: var(--text-muted);
+  color: rgba(255,255,255,0.18);
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.20em;
   text-align: center;
-  margin-top: -4px;
+  margin-top: -2px;
+}
+
+/* Adicionar separador visual entre grupos de nav */
+.nav-group-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255,255,255,0.18);
+  padding: 16px 14px 6px;
 }
 
 .sidebar-nav {
@@ -64,30 +87,29 @@
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 500;
-  transition: all var(--transition-fast);
   cursor: pointer;
   text-decoration: none;
   position: relative;
+  transition: all 150ms ease;
+  border-left: 2px solid transparent;
 }
 
-.nav-item:hover {
-  color: var(--text-secondary);
-  background-color: var(--surface-elevated);
+.nav-item:hover:not(.active) {
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.75);
+  border-left-color: rgba(255,255,255,0.08);
 }
 
 .nav-item.active {
-  background-color: var(--color-primary-muted);
-  color: var(--color-primary);
+  background: linear-gradient(90deg, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0.06) 100%);
+  color: #93C5FD;
+  border-left: 2px solid #3B82F6;
 }
 
-.nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 20%; bottom: 20%;
-  width: 2px;
-  background: var(--color-primary);
-  border-radius: var(--radius-full);
+.nav-item.active .nav-icon {
+  color: #60A5FA;
 }
+
 
 .nav-icon {
   width: 18px;
@@ -96,13 +118,12 @@
 }
 
 .nav-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--color-success);
   margin-left: auto;
   flex-shrink: 0;
-  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
 }
 
 .sidebar-footer {

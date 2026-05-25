@@ -484,8 +484,9 @@ export interface Product {
   preco_custo: number;
   preco_venda: number;
   quantidade_estoque: number;
+  estoque_minimo?: number;
+  desconto_vitrine?: number;
   foto_url: string | null;
-  desconto_vitrine: number | null;
   estoque_critico: boolean;
   ativo: boolean;
 }
@@ -515,7 +516,7 @@ export const MOCK_PRODUCTS: Product[] = [
     preco_venda: 69.90,
     quantidade_estoque: 12,
     foto_url: null,
-    desconto_vitrine: null,
+    
     estoque_critico: false,
     ativo: true,
   },
@@ -529,7 +530,7 @@ export const MOCK_PRODUCTS: Product[] = [
     preco_venda: 29.90,
     quantidade_estoque: 23,
     foto_url: null,
-    desconto_vitrine: null,
+    
     estoque_critico: false,
     ativo: true,
   },
@@ -543,7 +544,7 @@ export const MOCK_PRODUCTS: Product[] = [
     preco_venda: 39.90,
     quantidade_estoque: 3,
     foto_url: null,
-    desconto_vitrine: null,
+    
     estoque_critico: true,
     ativo: true,
   },
@@ -557,7 +558,7 @@ export const MOCK_PRODUCTS: Product[] = [
     preco_venda: 219.90,
     quantidade_estoque: 5,
     foto_url: null,
-    desconto_vitrine: null,
+    
     estoque_critico: false,
     ativo: true,
   },
@@ -571,7 +572,7 @@ export const MOCK_PRODUCTS: Product[] = [
     preco_venda: 159.90,
     quantidade_estoque: 4,
     foto_url: null,
-    desconto_vitrine: null,
+    
     estoque_critico: false,
     ativo: true,
   },
@@ -599,7 +600,7 @@ export const MOCK_PRODUCTS: Product[] = [
     preco_venda: 14.90,
     quantidade_estoque: 31,
     foto_url: null,
-    desconto_vitrine: null,
+    
     estoque_critico: false,
     ativo: true,
   },

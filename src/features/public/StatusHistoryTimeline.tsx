@@ -1,5 +1,5 @@
 import { MOCK_STATUS_HISTORY } from '@/data/mock-data';
-import { formatTimeAgo } from '@/shared/utils';
+import { formatTimeAgo } from '@/lib';
 import './StatusHistoryTimeline.css';
 
 interface Props {

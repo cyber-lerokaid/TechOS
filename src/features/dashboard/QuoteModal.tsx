@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { X, Sparkles, Send } from 'lucide-react';
 import { formatBRL, type ServiceOrder } from '@/data/mock-data';
 import { useAuth } from '@/app/providers/AuthContext';
-import { notifyOrcamento } from '@/shared/services/whatsappService';
+import { notifyOrcamento } from '@/lib/services/whatsappService';
 import { Loader2 } from 'lucide-react';
-import { Toast } from '@/shared/ui/Toast';
+import { Toast } from '@/components/ui/Toast';
 
 interface QuoteModalProps {
   os: ServiceOrder;

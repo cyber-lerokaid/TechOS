@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Modal } from '@/shared/ui/Modal';
+import { Modal } from '@/components/ui/Modal';
 import { Loader2 } from 'lucide-react';
-import { Toast } from '@/shared/ui/Toast';
+import { Toast } from '@/components/ui/Toast';
 import { useAuth } from '@/app/providers/AuthContext';
-import { notifyStatusUpdate } from '@/shared/services/whatsappService';
+import { notifyStatusUpdate } from '@/lib/services/whatsappService';
 import type { ServiceOrder } from '@/data/mock-data';
+import { Button } from '@/components/ui/Button';
 
 interface NotifyModalProps {
   isOpen: boolean;
@@ -72,13 +73,13 @@ export const NotifyModal = ({ isOpen, onClose, onNotify, customerName, device, n
         </div>
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '8px' }}>
-          <button className="btn btn-outline" onClick={() => { onNotify(); onClose(); }}>
+          <Button variant="outline" onClick={() => { onNotify(); onClose(); }}>
             Não, só atualizar
-          </button>
-          <button className="btn btn-primary" onClick={handleNotify} disabled={isSending}>
-            {isSending ? <Loader2 size={16} className="animate-spin" /> : null}
+          </Button>
+          <Button variant="default" onClick={handleNotify} disabled={isSending}>
+            {isSending ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
             {isSending ? 'Enviando...' : 'Sim, notificar pelo WhatsApp'}
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

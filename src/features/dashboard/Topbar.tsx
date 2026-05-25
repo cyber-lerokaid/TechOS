@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Plus, Menu } from 'lucide-react';
+import { Search, Bell, Plus, Menu, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/app/providers/AuthContext';
-import { Avatar } from '@/shared/ui/Avatar';
-import { Button } from '@/shared/ui/Button';
-import { fetchOrdensServico, fetchDemoCustomers } from '@/shared/services/osService';
+import { Avatar } from '@/components/ui/Avatar';
+import { Button } from '@/components/ui/Button';
+import { fetchOrdensServico, fetchDemoCustomers } from '@/lib/services/osService';
 import { getCriticalStock } from '@/data/mock-data';
 import './Topbar.css';
 
 const Topbar = () => {
-  const { user, isDemoMode } = useAuth();
+  const { user, isDemoMode, signOut } = useAuth();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -70,15 +70,15 @@ const Topbar = () => {
   return (
     <header className="topbar">
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-        <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'none' }} className="mobile-menu-btn">
+        <Button variant="ghost" size="icon" className="mobile-menu-btn" style={{ display: 'none' }}>
           <Menu size={24} />
-        </button>
+        </Button>
         
         <div className="topbar-search" ref={searchRef} style={{ position: 'relative' }}>
           <Search size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input 
             type="text" 
-            placeholder="Buscar OS, cliente ou aparelho..." 
+            placeholder="Buscar OS, cliente ou aparelho... (Ctrl+K)" 
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -93,7 +93,7 @@ const Topbar = () => {
                 <h4 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Ordens de Serviço</h4>
                 {filteredOrders.length === 0 ? <div style={{ fontSize: '14px', color: 'var(--text-muted)', padding: '8px 0', textAlign: 'center' }}>Nenhuma OS encontrada</div> : null}
                 {filteredOrders.map(os => (
-                  <div key={os.id} className="search-result-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', cursor: 'pointer', borderRadius: 'var(--radius-md)' }} onClick={() => handleSearchClick('/dashboard/os')}>
+                  <div key={os.id} className="search-result-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', cursor: 'pointer', borderRadius: 'var(--radius-md)' }} onClick={() => handleSearchClick(`/dashboard/ordens?search=${encodeURIComponent(os.numero_os)}`)}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>#{os.numero_os}</span> 
                       <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{os.device_label}</span>
@@ -106,7 +106,7 @@ const Topbar = () => {
                 <h4 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Clientes</h4>
                 {filteredCustomers.length === 0 ? <div style={{ fontSize: '14px', color: 'var(--text-muted)', padding: '8px 0', textAlign: 'center' }}>Nenhum cliente encontrado</div> : null}
                 {filteredCustomers.map(c => (
-                  <div key={c.id} className="search-result-item" style={{ padding: '8px', cursor: 'pointer', borderRadius: 'var(--radius-md)' }} onClick={() => handleSearchClick('/dashboard/clientes')}>
+                  <div key={c.id} className="search-result-item" style={{ padding: '8px', cursor: 'pointer', borderRadius: 'var(--radius-md)' }} onClick={() => handleSearchClick(`/dashboard/clientes?search=${encodeURIComponent(c.nome)}`)}>
                     <div style={{ fontWeight: 500, fontSize: '14px', color: 'var(--text-primary)' }}>{c.nome}</div>
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{c.telefone}</div>
                   </div>
@@ -124,10 +124,10 @@ const Topbar = () => {
         </Button>
 
         <div style={{ position: 'relative' }} ref={notifRef}>
-          <button className="notification-btn" onClick={() => setIsNotifOpen(!isNotifOpen)}>
+          <Button variant="ghost" size="icon" className="notification-btn" onClick={() => setIsNotifOpen(!isNotifOpen)}>
             <Bell size={20} />
             {isDemoMode && <span className="notification-badge"></span>}
-          </button>
+          </Button>
           
           {isNotifOpen && (
             <div style={{ position: 'absolute', right: 0, marginTop: '8px', width: '320px', backgroundColor: 'var(--surface-floating)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-lg)', overflow: 'hidden', zIndex: 50 }}>
@@ -151,12 +151,17 @@ const Topbar = () => {
           )}
         </div>
 
-        <div className="user-profile">
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-            <span className="user-name">{user?.user_metadata?.name || 'Técnico Logado'}</span>
-            <span className="user-role">Administrador</span>
+        <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              <span className="user-name">{user?.user_metadata?.nome || user?.nome || 'Técnico Logado'}</span>
+              <span className="user-role">Administrador</span>
+            </div>
+            <Avatar name={user?.user_metadata?.nome || user?.nome || 'Técnico Logado'} url={user?.user_metadata?.avatar_url} />
           </div>
-          <Avatar name={user?.user_metadata?.name || 'Técnico Logado'} url={user?.user_metadata?.avatar_url} />
+          <Button variant="ghost" size="icon" onClick={signOut} title="Sair do sistema">
+            <LogOut size={20} style={{ color: 'var(--text-muted)' }} />
+          </Button>
         </div>
       </div>
     </header>
