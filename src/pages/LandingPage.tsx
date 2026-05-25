@@ -7,7 +7,6 @@ import { EnvironmentLayer } from '@/components/environment/EnvironmentLayer';
 import './LandingPage.css';
 
 const surfaceBase = "relative rounded-2xl p-7 border border-white/[0.08] backdrop-blur-xl overflow-hidden transition-all duration-300";
-const surfaceLevel1 = `${surfaceBase} bg-white/[0.02]`;
 const surfaceLevel2 = `${surfaceBase} bg-gradient-to-b from-white/[0.05] to-white/[0.02] shadow-[0_10px_40px_rgba(0,0,0,0.4)]`;
 const surfaceLevel3 = `${surfaceBase} bg-gradient-to-b from-white/[0.08] to-white/[0.03] shadow-[0_25px_80px_rgba(0,0,0,0.6)] ring-1 ring-white/[0.12]`;
 
