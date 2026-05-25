@@ -17,42 +17,65 @@ const features = [
     color: '#0EA5E9',
     colorMuted: 'rgba(14,165,233,0.10)',
     title: 'Check-in Fotográfico',
-    desc: 'Registre fotos, checklist e assinatura digital do cliente em menos de 2 minutos. Proteção legal total contra reclamações.',
+    desc: [
+      'Evite dor de cabeça com clientes.',
+      'Cada entrada gera um check-in com fotos, checklist e assinatura digital. Tudo documentado. Tudo protegido.',
+      'Se der problema depois, você tem prova.'
+    ],
   },
   {
     icon: MessageCircle,
     color: '#22C55E',
     colorMuted: 'rgba(34,197,94,0.10)',
     title: 'WhatsApp Automático',
-    desc: 'O cliente recebe o link da OS, acompanha o status em tempo real e aprova orçamentos sem precisar ligar uma única vez.',
+    desc: [
+      'Pare de perder tempo atualizando cliente.',
+      'O sistema envia o status automaticamente em cada etapa.',
+      'Orçamento, aprovação, finalização — tudo sem você precisar lembrar.'
+    ],
   },
   {
     icon: Kanban,
     color: '#8B5CF6',
     colorMuted: 'rgba(139,92,246,0.10)',
     title: 'Kanban de Bancada',
-    desc: 'Arraste as OS entre status e o sistema notifica o cliente automaticamente. Visualize toda a fila de trabalho num relance.',
+    desc: [
+      'Veja sua operação acontecendo em tempo real.',
+      'Arraste as OS entre etapas e saiba exatamente onde cada serviço está.',
+      'Sem perguntar. Sem confusão.'
+    ],
   },
   {
     icon: TrendingUp,
     color: '#F59E0B',
     colorMuted: 'rgba(245,158,11,0.10)',
     title: 'Financeiro Real',
-    desc: 'Dashboard financeiro calculado automaticamente pelas OS fechadas. Saiba seu lucro real sem preencher nenhum relatório.',
+    desc: [
+      'Saiba quanto você realmente ganha.',
+      'O sistema calcula automaticamente com base nas OS fechadas.',
+      'Sem planilha. Sem achismo.'
+    ],
   },
   {
     icon: ShoppingBag,
     color: '#EC4899',
     colorMuted: 'rgba(236,72,153,0.10)',
     title: 'Vitrine Reativa',
-    desc: 'Exiba produtos no link da OS do cliente. Se o aparelho é um notebook, mostra mouses e carregadores. Venda enquanto conserta.',
+    desc: [
+      'Venda enquanto o serviço acontece.',
+      'O cliente vê sugestões direto na OS.',
+      'Você aumenta o ticket sem esforço.'
+    ],
   },
   {
     icon: Shield,
     color: '#06B6D4',
     colorMuted: 'rgba(6,182,212,0.10)',
-    title: 'Controle de Garantia',
-    desc: 'Cada serviço gera 90 dias de garantia automática. O sistema alerta quando um cliente retorna dentro do prazo.',
+    title: 'Garantia Inteligente',
+    desc: [
+      'Controle garantia sem depender da memória.',
+      'O sistema rastreia prazos automaticamente e te avisa quando algo volta.'
+    ],
   },
 ];
 
@@ -166,7 +189,7 @@ const LandingPage = () => {
           </Link>
           <div className="lp-nav-links">
             <a href="#features">Recursos</a>
-            <a href="#pricing">Planos</a>
+            <a href="#manifesto">Visão</a>
             <a href="#faq">FAQ</a>
           </div>
             <div className="lp-nav-actions">
@@ -351,19 +374,28 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── 2.2 STATS ── */}
+      {/* ── 2.2 TRUST / TECH INFO ── */}
       <section className="lp-stats">
         <div className="lp-stats-inner">
           {[
-            { value: '2.400+', label: 'OS abertas por mês' },
-            { value: '98%',    label: 'Taxa de satisfação' },
-            { value: '3h',     label: 'Economizadas por dia' },
-            { value: 'R$0',    label: 'Para começar' },
-          ].map((s, i) => (
-            <div key={i} className="lp-stat">
-              <span className="lp-stat-val">{s.value}</span>
-              <span className="lp-stat-label">{s.label}</span>
-            </div>
+            { title: 'Dados reais desde o início', text: 'Backend integrado com Supabase e PostgreSQL. Nada de dashboard fake.' },
+            { title: 'Arquitetura de SaaS', text: 'Multi-tenant preparado para escalar. Cada cliente isolado com segurança.' },
+            { title: 'Demo funcional', text: 'Todas as features funcionando. Mesmo sem cadastro.' },
+            { title: 'R$0 para começar', text: 'Teste completo antes de criar conta.' },
+          ].map((item, i) => (
+            <motion.div 
+              key={i} 
+              className="lp-stat group flex flex-col justify-center items-center text-center !px-6 !py-10"
+              whileHover={{ y: -2, backgroundColor: 'rgba(255,255,255,0.02)' }}
+              transition={{ duration: 0.2 }}
+            >
+              <h4 className="text-[17px] font-bold text-white mb-2 tracking-tight group-hover:text-blue-400 transition-colors duration-300">
+                {item.title}
+              </h4>
+              <p className="text-[13px] text-white/60 leading-relaxed font-medium">
+                {item.text}
+              </p>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -412,32 +444,60 @@ const LandingPage = () => {
       </section>
 
       {/* ── 2.4 FEATURES ── */}
-      <section id="features" className="lp-features">
+      <section id="features" className="lp-features py-24 relative z-10">
         <div className="lp-section-inner">
-          <div className="lp-features-header">
-            <span className="lp-section-eyebrow">Tudo incluso</span>
-            <h2 className="lp-section-title">
-              Não é só uma OS.<br />
-              <span className="lp-accent-text">É uma operação completa.</span>
+          <motion.div 
+            className="lp-features-header mb-16 text-center"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="lp-section-eyebrow">Operação</span>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6 mt-4">
+              Não é um sistema.<br />
+              <span className="lp-accent-text">É sua operação rodando.</span>
             </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p className="text-white/60 text-lg max-w-2xl mx-auto">
+              Do atendimento ao financeiro — tudo pensado para eliminar atrito na operação.
+            </p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {features.map((f, i) => (
               <motion.div
                 key={i}
-                className={`${i === 0 ? surfaceLevel3 : surfaceLevel2} flex flex-col gap-5 ${i === 0 ? 'md:col-span-2' : ''}`}
+                className={`${surfaceLevel2} flex flex-col group h-full justify-between !p-8`}
                 style={{'--f-color': f.color, '--f-color-bg': f.colorMuted} as React.CSSProperties}
-                whileHover={i === 0 ? { y: -8, scale: 1.02 } : { y: -5 }}
-                transition={{ type: "spring", stiffness: 130, damping: 18 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ type: "spring", stiffness: 130, damping: 18, delay: i * 0.1 }}
+                whileHover={{ y: -6, scale: 1.02 }}
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none" />
-                <div className="absolute inset-0 bg-white/[0.04] opacity-0 hover:opacity-100 transition-opacity duration-400 pointer-events-none" />
-                <div className="w-10 h-10 rounded-lg bg-white/[0.05] flex items-center justify-center mb-4 relative z-10" style={{color: f.color}}>
-                  <f.icon size={20} />
-                </div>
-                <div className="relative z-10">
-                  <h3 className="text-xl font-semibold text-white mb-2 tracking-wide">{f.title}</h3>
-                  <p className="text-white/70 leading-relaxed text-sm">{f.desc}</p>
+                <div className="absolute inset-0 bg-white/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                <div className="absolute inset-0 border border-transparent group-hover:border-white/10 transition-colors duration-300 rounded-2xl pointer-events-none" />
+                <div className="absolute inset-0 shadow-[0_0_30px_transparent] group-hover:shadow-[0_0_40px_var(--f-color-bg)] transition-shadow duration-300 rounded-2xl pointer-events-none" />
+                
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className="w-12 h-12 rounded-xl bg-white/[0.05] flex items-center justify-center mb-6 border border-white/5 shadow-inner" style={{color: f.color}}>
+                    <f.icon size={24} strokeWidth={2.5} />
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-white mb-4 tracking-wide transition-colors">
+                    {f.title}
+                  </h3>
+                  
+                  <div className="flex flex-col gap-3 text-sm flex-1">
+                    {f.desc.map((paragraph, pIdx) => (
+                      <p 
+                        key={pIdx} 
+                        className={`${pIdx === 0 ? 'text-white/90 font-medium' : 'text-white/60'} leading-relaxed`}
+                      >
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -445,66 +505,85 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── 2.5 PRICING ── */}
-      <section id="pricing" className="lp-pricing">
-        <div className="lp-section-inner">
-          <div className="lp-pricing-header">
-            <span className="lp-section-eyebrow">Planos</span>
+      {/* ── 2.5 MANIFESTO ── */}
+      <section id="manifesto" className="py-24 relative overflow-hidden">
+        <div className="lp-section-inner relative z-10">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="lp-section-eyebrow">Visão de Produto</span>
             <h2 className="lp-section-title">
-              Simples. Transparente.<br />Feito para crescer.
+              Mais que um projeto.<br />Um <span className="lp-accent-text">ecossistema em construção.</span>
             </h2>
-            <p>Sem fidelidade. Cancele quando quiser.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
-            {[
-              {
-                name: 'Inicial', amount: '0', period: '/mês', featured: false,
-                features: ['Até 50 OS por mês', '1 Usuário', 'Controle de Estoque', 'Relatórios básicos'],
-                cta: 'Começar grátis', ctaStyle: 'ghost', href: '/register',
-              },
-              {
-                name: 'Pro', amount: '79', period: '/mês', featured: true,
-                features: ['OS Ilimitadas', 'Usuários ilimitados', 'WhatsApp automático', 'Check-in com fotos', 'Vitrine reativa'],
-                cta: 'Assinar Pro', ctaStyle: 'primary', href: '/register',
-              },
-              {
-                name: 'Premium', amount: '149', period: '/mês', featured: false,
-                features: ['Tudo do Pro', 'Múltiplas filiais', 'API e integrações', 'Suporte 24/7', 'Treinamento dedicado'],
-                cta: 'Falar com consultor', ctaStyle: 'ghost', href: '/register',
-              },
-            ].map((plan, i) => (
-              <motion.div 
-                key={i} 
-                className={`${plan.featured ? surfaceLevel3 : surfaceLevel2} flex flex-col ${plan.featured ? 'bg-gradient-to-b from-white/[0.1] to-white/[0.04] ring-white/[0.15] scale-[1.02]' : ''}`}
-                whileHover={plan.featured ? { y: -8, scale: 1.02 } : { y: -5 }}
-                transition={{ type: "spring", stiffness: 130, damping: 18 }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none" />
-                <div className="absolute inset-0 bg-white/[0.04] opacity-0 hover:opacity-100 transition-opacity duration-400 pointer-events-none" />
-                {plan.featured && <span className="absolute top-0 inset-x-0 mx-auto w-max px-3 py-1 bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest rounded-b-lg">Mais popular</span>}
-                <div className="relative z-10 pt-4">
-                  <div className="text-white/70 font-semibold mb-4">{plan.name}</div>
-                  <div className="flex items-baseline gap-1 mb-8">
-                    <span className="text-2xl font-bold text-white/80">R$</span>
-                    <span className="text-5xl font-extrabold text-white tracking-wide">{plan.amount}</span>
-                    <span className="text-white/40">{plan.period}</span>
-                  </div>
-                </div>
-                <div className="h-px bg-white/10 w-full mb-8" />
-                <ul className="flex flex-col gap-4 mb-10 flex-1 relative z-10">
-                  {plan.features.map(feat => (
-                    <li key={feat} className="flex items-center gap-3 text-white/70 leading-relaxed text-sm">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
+            <motion.div 
+              className={`${surfaceLevel2} !p-10 flex flex-col h-full justify-center`}
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <p className="text-white/80 text-lg leading-relaxed mb-6">
+                Construí o TechOS com a ideia de ser mais do que um dashboard.
+              </p>
+              <p className="text-white/80 text-lg leading-relaxed mb-6">
+                Nada aqui é apenas visual.<br />
+                Tudo foi desenhado para simular um <strong className="text-white">produto real em produção.</strong>
+              </p>
+              <p className="text-white/80 text-lg leading-relaxed">
+                A ideia é evoluir isso para um sistema completo de gestão, automação e inteligência de negócio.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              className={`${surfaceLevel3} !p-10 flex flex-col h-full justify-center bg-gradient-to-br from-blue-900/20 to-cyan-900/10`}
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <h3 className="text-xl font-bold text-white mb-8">A stack foi pensada para escalar desde o início:</h3>
+              <ul className="flex flex-col gap-6">
+                {[
+                  'Frontend moderno e performático',
+                  'Backend estruturado com foco em dados reais',
+                  'Integração com banco de dados real (Supabase)',
+                  'Arquitetura preparada para SaaS multiusuário'
+                ].map((item, i) => (
+                  <motion.li 
+                    key={i} 
+                    className="flex items-center gap-4 text-white/80 font-medium"
+                    whileHover={{ x: 5, color: '#fff' }}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-400/20 flex items-center justify-center text-blue-400 shrink-0 shadow-[0_0_15px_rgba(37,99,235,0.15)]">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
-                      {feat}
-                    </li>
-                  ))}
-                </ul>
-                <Link to={plan.href} className={`lp-plan-btn relative z-10 ${plan.ctaStyle === 'primary' ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'} w-full text-center py-4 rounded-xl font-bold transition-all`}>{plan.cta}</Link>
-              </motion.div>
-            ))}
+                    </div>
+                    <span className="leading-tight">{item}</span>
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
           </div>
+
+          <motion.div 
+            className="mt-16 text-center"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <span className="inline-block px-8 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-xl font-medium text-white/90 shadow-2xl backdrop-blur-md hover:bg-white/[0.06] transition-colors cursor-default">
+              Isso é <span className="lp-accent-text font-bold">só o começo.</span> <span className="inline-block ml-2 animate-bounce">🚀</span>
+            </span>
+          </motion.div>
         </div>
       </section>
 

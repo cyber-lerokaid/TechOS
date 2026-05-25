@@ -68,10 +68,6 @@ export const fetchOrdensServico = async (isDemoMode: boolean): Promise<ServiceOr
  */
 export const saveOrdemServico = async (osData: Partial<ServiceOrder>, isDemoMode: boolean): Promise<ServiceOrder> => {
   if (isDemoMode) {
-    initDemoData();
-    const existingDataString = sessionStorage.getItem(SESSION_STORAGE_KEY);
-    const existingOrders: ServiceOrder[] = existingDataString ? JSON.parse(existingDataString) : [];
-    
     const novaOs: ServiceOrder = {
       ...osData,
       id: `os_demo_${Date.now()}`,
@@ -79,9 +75,7 @@ export const saveOrdemServico = async (osData: Partial<ServiceOrder>, isDemoMode
       atualizado_em: new Date().toISOString(),
     } as ServiceOrder;
 
-    // Adiciona no topo da lista
-    const newOrders = [novaOs, ...existingOrders];
-    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(newOrders));
+    demoStore.orders = [novaOs as any, ...demoStore.orders];
     
     // Dispara evento global para tabelas e kanban atualizarem
     window.dispatchEvent(new CustomEvent('osUpdated'));
@@ -123,8 +117,7 @@ const notifyCustomerIfStatusChanged = (oldOs: ServiceOrder, newOs: ServiceOrder)
  */
 export const updateOrdemServico = async (id: string, osData: Partial<ServiceOrder>, isDemoMode: boolean): Promise<ServiceOrder> => {
   if (isDemoMode) {
-    const existingDataString = sessionStorage.getItem(SESSION_STORAGE_KEY);
-    const existingOrders: ServiceOrder[] = existingDataString ? JSON.parse(existingDataString) : [];
+    const existingOrders = demoStore.orders;
     
     const index = existingOrders.findIndex(os => os.id === id);
     if (index === -1) throw new Error('OS não encontrada');
@@ -136,15 +129,15 @@ export const updateOrdemServico = async (id: string, osData: Partial<ServiceOrde
       atualizado_em: new Date().toISOString()
     };
     
-    existingOrders[index] = updatedOs;
-    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(existingOrders));
+    existingOrders[index] = updatedOs as any;
+    demoStore.orders = existingOrders;
     
     window.dispatchEvent(new CustomEvent('osUpdated'));
     
     // Notificação WhatsApp Nativo
-    notifyCustomerIfStatusChanged(oldOs, updatedOs);
+    notifyCustomerIfStatusChanged(oldOs as any, updatedOs as any);
     
-    return updatedOs;
+    return updatedOs as any;
   } else {
     // Busca a OS antiga para comparar
     const { data: oldOs, error: _fetchError } = await supabase

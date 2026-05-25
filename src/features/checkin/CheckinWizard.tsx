@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MOCK_CUSTOMERS } from '@/data/mock-data';
+
 import { DEVICE_DATA } from '@/data/device-data';
 import { Search, User, Smartphone, Camera, CheckCircle, ChevronRight, X, AlertTriangle, Loader2, Laptop, Monitor, Tablet, Gamepad2, Trash2 } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
@@ -11,6 +11,7 @@ import { notifyCheckin } from '@/lib/services/whatsappService';
 import { saveOrdemServico, updateOrdemServico } from '@/lib/services/osService';
 import { buscarCep, formatCep, formatPhone } from '@/lib/services/viaCepService';
 import { MapPin } from 'lucide-react';
+import { demoStore } from '@/shared/lib/api/providers/demo/demo-store';
 import './CheckinWizard.css';
 
 const STEPS = ['Cliente', 'Aparelho', 'Fotos', 'Assinatura', 'Confirmação'];
@@ -213,7 +214,7 @@ const CheckinWizard = () => {
     }
 
     if (isDemoMode) {
-      const found = MOCK_CUSTOMERS.filter(c => 
+      const found = demoStore.customers.filter(c => 
         c.nome.toLowerCase().includes(q.toLowerCase()) || 
         c.telefone.includes(q)
       );
@@ -319,7 +320,7 @@ const CheckinWizard = () => {
           id: `demo-${Date.now()}`,
           criado_em: new Date().toISOString()
         };
-        MOCK_CUSTOMERS.push(fakeCustomer as any);
+        demoStore.customers.push(fakeCustomer as any);
         setSelectedCustomer(fakeCustomer);
         setSearchQuery(fakeCustomer.nome);
         await createDraftOs(fakeCustomer);
