@@ -4,8 +4,6 @@ import Topbar from '@/features/dashboard/Topbar';
 import BottomNav from '@/features/dashboard/BottomNav';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/app/providers/AuthContext';
-import { useQueryClient } from '@tanstack/react-query';
-import { applyDemoScenarios } from '@/lib/services/osService';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 
 import { useState, useEffect } from 'react';
@@ -19,7 +17,6 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { isDemoMode, signOut } = useAuth();
-  const queryClient = useQueryClient();
   
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const [modalOs, setModalOs] = useState<ServiceOrder | null>(null);

@@ -40,7 +40,7 @@ export const ScannerModal = ({ isOpen, onClose, onScan }: ScannerModalProps) => 
               onClose();
             });
           },
-          (errorMessage) => {
+          (_errorMessage) => {
             // Erros de leitura ignorados (acontecem a cada frame que não acha código)
           }
         );
