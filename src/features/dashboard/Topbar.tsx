@@ -142,10 +142,10 @@ const Topbar = () => {
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-        <Button variant="premium" onClick={() => navigate('/checkin')}>
-          <Plus size={16} style={{ marginRight: '8px' }} />
-          Nova OS
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Button variant="premium" onClick={() => navigate('/checkin')} className="px-2 md:px-4">
+          <Plus size={16} className="md:mr-2" />
+          <span className="hidden md:inline">Nova OS</span>
         </Button>
 
         <div style={{ position: 'relative' }} ref={notifRef}>
@@ -176,13 +176,13 @@ const Topbar = () => {
           )}
         </div>
 
-        <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+        <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="hidden md:flex" style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
               <span className="user-name">{user?.user_metadata?.nome || user?.nome || 'Técnico Logado'}</span>
               <span className="user-role">Administrador</span>
             </div>
-            <Avatar name={user?.user_metadata?.nome || user?.nome || 'Técnico Logado'} url={user?.user_metadata?.avatar_url} />
+            <Avatar name={user?.user_metadata?.nome || user?.nome || 'Técnico Logado'} url={user?.user_metadata?.avatar_url} className="w-8 h-8 md:w-10 md:h-10" />
           </div>
           <Button variant="ghost" size="icon" onClick={signOut} title="Sair do sistema">
             <LogOut size={20} style={{ color: 'var(--text-muted)' }} />

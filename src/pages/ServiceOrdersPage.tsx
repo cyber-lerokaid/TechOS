@@ -16,7 +16,6 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 
 const ServiceOrdersPage = () => {
-  
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
@@ -25,6 +24,7 @@ const ServiceOrdersPage = () => {
     const s = searchParams.get('search');
     if (s !== null) setSearchTerm(s);
   }, [searchParams]);
+
   const [selectedOsId, setSelectedOsId] = useState<string | null>(null);
   const { data: remoteOrders, isLoading: isOrdersLoading } = useOrderList();
   const updateStatusMutation = useUpdateOrderStatus();
@@ -44,11 +44,8 @@ const ServiceOrdersPage = () => {
   };
 
   const setOsForQuote = (_os: any) => {
-    // mock action
     window.dispatchEvent(new CustomEvent('showToast', { detail: { message: 'Iniciando orçamento', type: 'info' } }));
   };
-
-  
 
   const filteredOrders = baseOrders.filter(os => {
     const matchSearch = os.numeroOs.includes(searchTerm) || 
@@ -76,18 +73,14 @@ const ServiceOrdersPage = () => {
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Ordens de Serviço</h1>
           <p className="text-muted-foreground mt-1">Gerencie todas as OS da sua assistência de forma ágil.</p>
         </div>
-        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 3, gap: 2 }}>
+        <div className="flex bg-white/5 rounded-lg p-[3px] gap-[2px]">
           {(['lista', 'kanban'] as const).map(mode => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              style={{
-                padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
-                background: viewMode === mode ? 'rgba(37,99,235,0.7)' : 'transparent',
-                color: viewMode === mode ? '#fff' : 'rgba(255,255,255,0.4)',
-                border: 'none', cursor: 'pointer', transition: 'all 150ms', fontFamily: 'inherit',
-                textTransform: 'capitalize',
-              }}
+              className={`px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer transition-all capitalize border-none ${
+                viewMode === mode ? 'bg-blue-600/70 text-white shadow-sm' : 'bg-transparent text-white/40 hover:text-white/70'
+              }`}
             >
               {mode === 'lista' ? '☰ Lista' : '⊞ Kanban'}
             </button>
@@ -95,22 +88,18 @@ const ServiceOrdersPage = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10, marginBottom: 20 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5 mb-5">
         {[
-          { label: 'Em aberto', value: baseOrders.filter(o => o.status !== 'entregue').length, color: '#60A5FA', urgent: false },
-          { label: 'Abertas hoje', value: osHoje.length, color: '#34D399', urgent: false },
-          { label: 'Atrasadas (+48h)', value: osAtrasadas.length, color: '#F87171', urgent: osAtrasadas.length > 0 },
-          { label: 'Aguardando aprovação', value: osPendentesOrcamento.length, color: '#FBBF24', urgent: false },
+          { label: 'Em aberto', value: baseOrders.filter(o => o.status !== 'entregue').length, color: 'text-blue-400', urgent: false },
+          { label: 'Abertas hoje', value: osHoje.length, color: 'text-emerald-400', urgent: false },
+          { label: 'Atrasadas (+48h)', value: osAtrasadas.length, color: 'text-red-400', urgent: osAtrasadas.length > 0 },
+          { label: 'Aguardando aprovação', value: osPendentesOrcamento.length, color: 'text-amber-400', urgent: false },
         ].map(card => (
-          <div key={card.label} style={{
-            background: card.urgent ? 'rgba(239,68,68,0.06)' : 'rgba(255,255,255,0.03)',
-            border: `1px solid ${card.urgent ? 'rgba(239,68,68,0.20)' : 'rgba(255,255,255,0.06)'}`,
-            borderRadius: 10, padding: '12px 16px',
-          }}>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
+          <div key={card.label} className={`rounded-[10px] p-3 px-4 border ${card.urgent ? 'bg-red-500/5 border-red-500/20' : 'bg-white/5 border-white/5'}`}>
+            <div className="text-[10px] text-white/35 mb-1 uppercase tracking-widest font-semibold">
               {card.label}
             </div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: card.color, fontFamily: 'Syne, sans-serif', lineHeight: 1 }}>
+            <div className={`text-[26px] font-extrabold leading-none font-syne ${card.color}`}>
               {card.value}
             </div>
           </div>
@@ -261,9 +250,9 @@ const ServiceOrdersPage = () => {
                         <TableCell>
                           {(() => {
                             const horas = Math.floor((Date.now() - new Date(os.atualizadoEm).getTime()) / 3600000);
-                            const color = horas > 48 ? 'rgba(239,68,68,0.8)' : horas > 24 ? 'rgba(245,158,11,0.8)' : 'rgba(34,197,94,0.7)';
+                            const colorClass = horas > 48 ? 'text-red-500/80' : horas > 24 ? 'text-amber-500/80' : 'text-green-500/70';
                             return (
-                              <span style={{ fontSize: 12, fontWeight: 600, color, display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <span className={`text-xs font-semibold flex items-center gap-1 ${colorClass}`}>
                                 <Clock size={11} />
                                 {horas < 1 ? 'agora' : horas < 24 ? `${horas}h` : `${Math.floor(horas/24)}d`}
                               </span>
@@ -271,17 +260,17 @@ const ServiceOrdersPage = () => {
                           })()}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                          <div className="flex gap-1.5 justify-end">
                             <button
                               onClick={e => { e.stopPropagation(); setSelectedOsId(os.id); }}
-                              style={{ padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'inherit' }}
+                              className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-colors"
                             >
                               Ver
                             </button>
                             {os.status === 'pronto' && (
                               <button
                                 onClick={e => { e.stopPropagation(); handleMarkEntregue(os.id); }}
-                                style={{ padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: 'rgba(34,197,94,0.85)', cursor: 'pointer', fontFamily: 'inherit' }}
+                                className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-green-500/10 border border-green-500/20 text-green-500/85 hover:bg-green-500/20 transition-colors"
                               >
                                 ✓ Entregue
                               </button>
@@ -289,7 +278,7 @@ const ServiceOrdersPage = () => {
                             {os.status === 'em_analise' && (
                               <button
                                 onClick={e => { e.stopPropagation(); setOsForQuote(os); }}
-                                style={{ padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.25)', color: '#93C5FD', cursor: 'pointer', fontFamily: 'inherit' }}
+                                className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 transition-colors"
                               >
                                 💰 Orçar
                               </button>

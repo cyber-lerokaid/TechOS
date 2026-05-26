@@ -26,6 +26,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-wrap: wrap;
   font-size: 13px;
   color: rgba(147, 197, 253, 0.85);
   flex-shrink: 0;
@@ -91,6 +92,23 @@
 }
 
 .demo-banner-close:hover { color: rgba(255,255,255,0.6); }
+
+@media (max-width: 768px) {
+  .demo-banner {
+    justify-content: center;
+    text-align: center;
+    padding: 8px 30px 8px 12px;
+  }
+  .demo-banner-cta {
+    margin-left: 0;
+  }
+  .demo-banner-close {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
 
 .dashboard-content {
   flex: 1;

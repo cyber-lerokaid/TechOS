@@ -110,7 +110,7 @@ const MetricCardComponent = ({ metric }: Props) => {
         )}
       </div>
 
-      <div style={{ fontSize: 30, fontWeight: 800, color: 'rgba(255,255,255,0.92)', letterSpacing: '-0.03em', fontFamily: 'Syne, sans-serif', lineHeight: 1, marginTop: 8 }}>
+      <div className="text-xl sm:text-2xl xl:text-3xl font-extrabold text-white/90 tracking-tight font-syne leading-none mt-2 truncate">
         {formatValue(displayValue)}
       </div>
 

@@ -121,7 +121,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           {metrics.map((metric) => (
             <div 
               key={metric.id} 
@@ -133,11 +133,11 @@ const Dashboard = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-12 gap-6 flex-1 overflow-visible min-h-[420px]">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 flex-1 overflow-visible min-h-[420px]">
           <div className="col-span-12 lg:col-span-8 flex flex-col gap-4 overflow-visible">
             <div className="flex justify-between items-center px-1">
               <h2 className="text-sm text-white/70 font-semibold tracking-wide uppercase">Ordens de Serviço</h2>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap justify-start lg:justify-end">
                 {isDemoMode && (
                   <Button 
                     variant="secondary" 

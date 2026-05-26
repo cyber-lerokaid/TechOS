@@ -301,14 +301,15 @@ const KanbanBoard = ({ filterMode = 'all' }: { filterMode?: 'all' | 'urgent' }) 
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="grid grid-cols-4 gap-4 h-full">
+        <div className="flex md:grid md:grid-cols-4 gap-4 h-full overflow-x-auto md:overflow-visible pb-4 md:pb-0 snap-x snap-mandatory hide-scrollbar">
           {kanbanColumns.map(column => (
-            <KanbanColumn 
-              key={column.id} 
-              column={column} 
-              orders={orders.filter(os => os.status === column.id)} 
-              onCardClick={(id) => setSelectedOsId(id)}
-            />
+            <div key={column.id} className="min-w-[285px] md:min-w-0 snap-center h-full shrink-0">
+              <KanbanColumn 
+                column={column} 
+                orders={orders.filter(os => os.status === column.id)} 
+                onCardClick={(id) => setSelectedOsId(id)}
+              />
+            </div>
           ))}
         </div>
 

@@ -121,7 +121,6 @@ const CustomersPage = () => {
     }
   };
 
-  // CRM Summary calculations
   const clientesVip = localCustomers.filter(c => c.totalGasto >= 500).length;
   const clientesInativos = localCustomers.filter(c => {
     const ultimaOs = allOrders.filter(os => os.customer_id === c.id).sort((a,b) => new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime())[0];
@@ -144,22 +143,18 @@ const CustomersPage = () => {
       </div>
 
       {!isLoading && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10, marginBottom: 24 }} className="animate-in fade-in slide-in-from-bottom-4 duration-600">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-600">
           {[
             { label: 'Total de Clientes', value: localCustomers.length, color: '#60A5FA', urgent: false },
             { label: 'Clientes VIP', value: clientesVip, color: '#FBBF24', urgent: false },
             { label: 'Inativos (+6 meses)', value: clientesInativos, color: '#F87171', urgent: clientesInativos > 0 },
             { label: 'LTV Médio', value: formatBRL(ltvMedio), color: '#34D399', urgent: false },
           ].map(card => (
-            <div key={card.label} className="hover-lift" style={{
-              background: card.urgent ? 'rgba(239,68,68,0.06)' : 'rgba(255,255,255,0.03)',
-              border: `1px solid ${card.urgent ? 'rgba(239,68,68,0.20)' : 'rgba(255,255,255,0.06)'}`,
-              borderRadius: 10, padding: '12px 16px',
-            }}>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>
+            <div key={card.label} className={`hover-lift rounded-[10px] py-3 px-4 border ${card.urgent ? "bg-red-500/5 border-red-500/20" : "bg-white/5 border-white/5"}`}>
+              <div className="text-[10px] text-white/35 mb-1 uppercase tracking-widest font-semibold">
                 {card.label}
               </div>
-              <div style={{ fontSize: 26, fontWeight: 800, color: card.color, fontFamily: 'Syne, sans-serif', lineHeight: 1 }}>
+              <div className="text-[26px] font-extrabold leading-none font-syne" style={{ color: card.color }}>
                 {card.value}
               </div>
             </div>
@@ -170,7 +165,7 @@ const CustomersPage = () => {
       {isLoading ? (
         <div className="flex flex-col gap-4 mt-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: 14, padding: '16px 18px', display: 'flex', gap: 14 }}>
+            <div key={i} className="bg-white/5 rounded-2xl p-4 px-[18px] flex gap-3.5">
               <Skeleton className="w-10 h-10 rounded-full" />
               <div className="flex-1 space-y-2 py-1">
                 <Skeleton className="h-4 w-1/3" />
@@ -203,7 +198,7 @@ const CustomersPage = () => {
               />
             </div>
             
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+            <div className="flex gap-1.5 flex-wrap items-center">
               {['todos', 'vip', 'fiel', 'regular', 'inativo', 'novo'].map(s => {
                 const colors: Record<string, string> = {
                   'todos': '#93C5FD', 'vip': '#FBBF24', 'fiel': '#34D399', 'regular': '#A78BFA', 'inativo': '#F87171', 'novo': '#60A5FA'
@@ -215,12 +210,11 @@ const CustomersPage = () => {
                   <button
                     key={s}
                     onClick={() => setSegmento(s)}
+                    className="px-3 py-1.5 rounded-full text-[11px] font-semibold capitalize transition-all border"
                     style={{
-                      padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
-                      border: `1px solid ${segmento === s ? colors[s] : 'rgba(255,255,255,0.07)'}`,
+                      borderColor: segmento === s ? colors[s] : 'rgba(255,255,255,0.07)',
                       background: segmento === s ? bg[s] : 'transparent',
                       color: segmento === s ? colors[s] : 'rgba(255,255,255,0.35)',
-                      cursor: 'pointer', transition: 'all 150ms', fontFamily: 'inherit', textTransform: 'capitalize'
                     }}
                   >
                     {s}
@@ -232,11 +226,7 @@ const CustomersPage = () => {
             <select 
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
-              style={{
-                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 8, padding: '0 12px', color: 'rgba(255,255,255,0.8)',
-                fontSize: 13, outline: 'none', cursor: 'pointer', fontFamily: 'inherit'
-              }}
+              className="bg-white/5 border border-white/10 rounded-lg px-3 text-[13px] text-white/80 outline-none cursor-pointer"
             >
               <option value="recente">Mais recentes</option>
               <option value="valor">Maior LTV</option>
@@ -254,65 +244,64 @@ const CustomersPage = () => {
                 : null;
 
               return (
-                <div key={c.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, overflow: 'hidden' }}>
+                <div key={c.id} className="bg-white/5 border border-white/5 rounded-[14px] overflow-hidden">
                   <div
                     onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}
-                    style={{ padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', transition: 'background 150ms' }}
-                    className="hover:bg-white/[0.02]"
+                    className="p-4 px-[18px] flex items-center gap-3.5 cursor-pointer transition-colors hover:bg-white/5"
                   >
                     <Avatar name={c.nome} className="w-10 h-10 text-sm shadow-sm" />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.88)' }}>{c.nome}</span>
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: seg.bg, color: seg.color }}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-semibold text-white/90">{c.nome}</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: seg.bg, color: seg.color }}>
                           {seg.label}
                         </span>
                       </div>
-                      <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+                      <div className="flex gap-3 text-[11px] text-white/40">
                         <span className="flex items-center gap-1"><Phone size={10} /> {c.telefone}</span>
                         {c.email && <span className="flex items-center gap-1"><Mail size={10} /> {c.email}</span>}
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: 'rgba(34,197,94,0.85)', letterSpacing: '-0.02em' }}>
+                    <div className="text-right shrink-0">
+                      <div className="text-base font-bold text-green-500/85 tracking-tight">
                         {formatBRL(c.totalGasto)}
                       </div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)' }}>{c.totalOs} OS</div>
+                      <div className="text-[11px] text-white/30">{c.totalOs} OS</div>
                     </div>
                   </div>
 
                   {expandedId === c.id && (
-                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 18px', background: 'rgba(0,0,0,0.2)' }} className="animate-in slide-in-from-top-2 duration-300">
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, marginBottom: 16 }}>
-                        <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.04)' }}>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: 'rgba(255,255,255,0.85)', fontFamily: 'Syne, sans-serif' }}>{c.totalOs}</div>
-                          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 2 }}>OS totais</div>
+                    <div className="border-t border-white/5 p-4 px-[18px] bg-black/20 animate-in slide-in-from-top-2 duration-300">
+                      <div className="grid grid-cols-3 gap-2.5 mb-4">
+                        <div className="text-center p-3 bg-white/5 rounded-[10px] border border-white/5">
+                          <div className="text-xl font-bold text-white/85 font-syne">{c.totalOs}</div>
+                          <div className="text-[10px] text-white/30 uppercase tracking-widest mt-0.5">OS totais</div>
                         </div>
-                        <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.04)' }}>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: 'rgba(34,197,94,0.85)', fontFamily: 'Syne, sans-serif' }}>{formatBRL(c.totalGasto)}</div>
-                          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 2 }}>LTV Gasto</div>
+                        <div className="text-center p-3 bg-white/5 rounded-[10px] border border-white/5">
+                          <div className="text-xl font-bold text-green-500/85 font-syne">{formatBRL(c.totalGasto)}</div>
+                          <div className="text-[10px] text-white/30 uppercase tracking-widest mt-0.5">LTV Gasto</div>
                         </div>
-                        <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.04)' }}>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: diasSemVisita !== null && diasSemVisita > 90 ? 'rgba(248,113,113,0.85)' : 'rgba(255,255,255,0.8)', fontFamily: 'Syne, sans-serif' }}>
+                        <div className="text-center p-3 bg-white/5 rounded-[10px] border border-white/5">
+                          <div className={`text-xl font-bold font-syne ${diasSemVisita !== null && diasSemVisita > 90 ? 'text-red-400/85' : 'text-white/80'}`}>
                             {diasSemVisita !== null ? `${diasSemVisita}d` : '—'}
                           </div>
-                          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 2 }}>Sem visita</div>
+                          <div className="text-[10px] text-white/30 uppercase tracking-widest mt-0.5">Sem visita</div>
                         </div>
                       </div>
 
                       {clienteOs.length > 0 && (
                         <div className="mb-4">
-                          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.30)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                          <p className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-2">
                             Últimas OS
                           </p>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          <div className="flex flex-col gap-1">
                             {clienteOs.slice(0, 3).map(os => (
-                              <div key={os.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'rgba(255,255,255,0.015)', borderRadius: 8 }}>
-                                <span style={{ fontSize: 12, color: '#60A5FA', fontFamily: 'monospace', fontWeight: 700 }}>#{os.numeroOs}</span>
-                                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', flex: 1, margin: '0 12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <div key={os.id} className="flex justify-between items-center py-2 px-3 bg-white/[0.015] rounded-lg">
+                                <span className="text-xs text-blue-400 font-mono font-bold">#{os.numeroOs}</span>
+                                <span className="text-xs text-white/55 flex-1 mx-3 overflow-hidden text-ellipsis whitespace-nowrap">
                                   {os.deviceLabel}
                                 </span>
-                                <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(34,197,94,0.8)' }}>
+                                <span className="text-xs font-semibold text-green-500/80">
                                   {formatBRL((os.valorMaoObra || 0) + (os.valorPecas || 0))}
                                 </span>
                               </div>
@@ -321,15 +310,14 @@ const CustomersPage = () => {
                         </div>
                       )}
 
-                      <div style={{ display: 'flex', gap: 8 }}>
+                      <div className="flex gap-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             const msg = encodeURIComponent(`Olá ${c.nome}! Tudo bem? Aqui é da TecnoFix. Faz um tempo que você não passa por aqui — estamos à disposição para qualquer manutenção! 😊`);
                             window.open(`https://wa.me/${c.telefone.replace(/\D/g,'')}?text=${msg}`, '_blank');
                           }}
-                          style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, padding: '10px', borderRadius: 8, fontSize: 12, fontWeight: 600, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: 'rgba(34,197,94,0.9)', cursor: 'pointer', transition: 'all 150ms' }}
-                          className="hover:bg-green-500/20"
+                          className="flex-1 flex justify-center items-center gap-1.5 p-2.5 rounded-lg text-xs font-semibold bg-green-500/10 border border-green-500/20 text-green-500/90 cursor-pointer transition-all hover:bg-green-500/20"
                         >
                           <MessageCircle size={14} /> Reativar via WhatsApp
                         </button>
@@ -338,8 +326,7 @@ const CustomersPage = () => {
                             e.stopPropagation();
                             navigate(`/checkin?customer_id=${c.id}`);
                           }}
-                          style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, padding: '10px', borderRadius: 8, fontSize: 12, fontWeight: 600, background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.25)', color: '#93C5FD', cursor: 'pointer', transition: 'all 150ms' }}
-                          className="hover:bg-blue-500/20"
+                          className="flex-1 flex justify-center items-center gap-1.5 p-2.5 rounded-lg text-xs font-semibold bg-blue-500/10 border border-blue-500/20 text-blue-400 cursor-pointer transition-all hover:bg-blue-500/20"
                         >
                           <Plus size={14} /> Nova OS para este cliente
                         </button>
@@ -360,7 +347,6 @@ const CustomersPage = () => {
         </div>
       )}
 
-      {/* New Customer Modal */}
       {isNewCustomerModalOpen && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1000] flex items-center justify-center p-4">
           <div className="bg-surface-1 border border-white/5 shadow-[0_20px_40px_rgba(0,0,0,0.6)] rounded-2xl w-full max-w-[400px] overflow-hidden animate-in zoom-in-95 duration-200">
@@ -384,40 +370,28 @@ const CustomersPage = () => {
                 <Input type="email" value={newCustomerEmail} onChange={e => setNewCustomerEmail(e.target.value)} />
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-white/45 uppercase tracking-widest">
                   CEP (opcional)
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="relative">
                   <input
                     value={cep}
                     onChange={e => handleCepChange(e.target.value)}
                     placeholder="00000-000"
-                    style={{
-                      width: '100%', padding: '10px 14px',
-                      background: 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${cepError ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                      borderRadius: 10, color: 'rgba(255,255,255,0.85)',
-                      fontSize: 14, fontFamily: 'inherit', outline: 'none',
-                    }}
+                    className={`w-full py-2.5 px-3.5 bg-white/5 border rounded-[10px] text-white/85 text-sm outline-none ${cepError ? 'border-red-500/50' : 'border-white/10'}`}
                   />
                   {cepLoading && (
-                    <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)' }}>
-                      <Loader2 size={14} style={{ color: 'rgba(255,255,255,0.3)', animation: 'spin 1s linear infinite' }} />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 size={14} className="text-white/30 animate-spin" />
                     </div>
                   )}
                 </div>
-                {cepError && <span style={{ fontSize: 11, color: 'rgba(239,68,68,0.8)' }}>{cepError}</span>}
+                {cepError && <span className="text-[11px] text-red-500/80">{cepError}</span>}
               </div>
 
               {endereco && (
-                <div style={{
-                  padding: '10px 14px', borderRadius: 10,
-                  background: 'rgba(34,197,94,0.06)',
-                  border: '1px solid rgba(34,197,94,0.15)',
-                  fontSize: 13, color: 'rgba(34,197,94,0.85)',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                }}>
+                <div className="p-2.5 px-3.5 rounded-[10px] bg-green-500/5 border border-green-500/15 text-[13px] text-green-500/85 flex items-center gap-2">
                   <MapPin size={13} />
                   {endereco}
                 </div>

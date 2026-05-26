@@ -15,7 +15,6 @@ import { Modal } from '@/components/ui/Modal';
 import { cn } from '@/lib/cn';
 
 const InventoryPage = () => {
-  
   type Tab = 'estoque' | 'vitrine' | 'movimentacoes';
   const [activeTab, setActiveTab] = useState<Tab>('estoque');
   const [searchTerm, setSearchTerm] = useState('');
@@ -120,9 +119,9 @@ const InventoryPage = () => {
   const getGiro = (produto: any): { label: string; color: string } => {
     const margin = Number(getMargin(produto.precoCusto, produto.precoVenda));
     const stock = produto.quantidadeEstoque;
-    if (stock <= 3 && margin > 30) return { label: 'Alto', color: 'rgba(34,197,94,0.85)' };
-    if (stock > 15) return { label: 'Baixo', color: 'rgba(239,68,68,0.85)' };
-    return { label: 'Médio', color: 'rgba(245,158,11,0.85)' };
+    if (stock <= 3 && margin > 30) return { label: 'Alto', color: 'text-green-500/85' };
+    if (stock > 15) return { label: 'Baixo', color: 'text-red-500/85' };
+    return { label: 'Médio', color: 'text-amber-500/85' };
   };
 
   const exportCSV = () => {
@@ -195,21 +194,17 @@ const InventoryPage = () => {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
         {[
-          { label: 'Valor em Estoque (Custo)', value: formatBRL(totalEstoque), color: 'rgba(37,99,235,0.8)' },
-          { label: 'Valor em Estoque (Venda)', value: formatBRL(totalVenda), color: 'rgba(34,197,94,0.8)' },
-          { label: 'Itens em Alerta', value: `${itensCriticos} produto${itensCriticos !== 1 ? 's' : ''}`, color: 'rgba(245,158,11,0.8)' },
+          { label: 'Valor em Estoque (Custo)', value: formatBRL(totalEstoque), color: 'text-blue-500/80' },
+          { label: 'Valor em Estoque (Venda)', value: formatBRL(totalVenda), color: 'text-green-500/80' },
+          { label: 'Itens em Alerta', value: `${itensCriticos} produto${itensCriticos !== 1 ? 's' : ''}`, color: 'text-amber-500/80' },
         ].map(card => (
-          <div key={card.label} style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: 12, padding: '14px 16px',
-          }}>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+          <div key={card.label} className="bg-white/5 border border-white/5 rounded-xl py-3.5 px-4">
+            <div className="text-[11px] text-white/35 mb-1.5 uppercase tracking-widest">
               {card.label}
             </div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: card.color, letterSpacing: '-0.02em' }}>
+            <div className={`text-xl font-bold tracking-tight ${card.color}`}>
               {card.value}
             </div>
           </div>
@@ -290,19 +285,12 @@ const InventoryPage = () => {
                           </TableCell>
                           <TableCell className="font-mono">{p.sku}</TableCell>
                           <TableCell>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <span style={{
-                                fontSize: 13, fontWeight: 600,
-                                color: p.estoqueCritico ? 'rgba(239,68,68,0.9)' : 'rgba(255,255,255,0.75)',
-                              }}>
+                            <div className="flex items-center gap-1.5">
+                              <span className={`text-[13px] font-semibold ${p.estoqueCritico ? 'text-red-500/90' : 'text-white/75'}`}>
                                 {p.quantidadeEstoque}
                               </span>
                               {p.estoqueCritico && (
-                                <span style={{
-                                  fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 10,
-                                  background: 'rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.8)',
-                                  textTransform: 'uppercase', letterSpacing: '0.06em',
-                                }}>
+                                <span className="text-[9px] font-bold px-1.5 py-[1px] rounded-full bg-red-500/10 text-red-500/80 uppercase tracking-wider">
                                   BAIXO
                                 </span>
                               )}
@@ -311,19 +299,13 @@ const InventoryPage = () => {
                           <TableCell className="font-medium">{formatBRL(p.precoCusto)}</TableCell>
                           <TableCell className="font-bold">{formatBRL(p.precoVenda)}</TableCell>
                           <TableCell>
-                            <span style={{
-                              fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
-                              background: Number(margin) > 40
-                                ? 'rgba(34,197,94,0.12)'
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                              Number(margin) > 40
+                                ? 'bg-green-500/10 text-green-500/90'
                                 : Number(margin) > 20
-                                  ? 'rgba(245,158,11,0.12)'
-                                  : 'rgba(239,68,68,0.12)',
-                              color: Number(margin) > 40
-                                ? 'rgba(34,197,94,0.9)'
-                                : Number(margin) > 20
-                                  ? 'rgba(245,158,11,0.9)'
-                                  : 'rgba(239,68,68,0.9)',
-                            }}>
+                                  ? 'bg-amber-500/10 text-amber-500/90'
+                                  : 'bg-red-500/10 text-red-500/90'
+                            }`}>
                               {margin}%
                             </span>
                           </TableCell>
@@ -331,9 +313,7 @@ const InventoryPage = () => {
                             {(() => {
                               const giro = getGiro(p);
                               return (
-                                <span style={{
-                                  fontSize: 12, fontWeight: 700, color: giro.color,
-                                }}>
+                                <span className={`text-xs font-bold ${giro.color}`}>
                                   {giro.label}
                                 </span>
                               )
