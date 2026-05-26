@@ -14,6 +14,7 @@ import InventoryPage from '@/pages/InventoryPage';
 import FinancialPage from '@/pages/FinancialPage';
 import SettingsPage from '@/pages/SettingsPage';
 import HistoricoPage from '@/pages/HistoricoPage';
+import PrintReceipt from '@/pages/PrintReceipt';
 import TermosPage from '@/pages/TermosPage';
 import PrivacidadePage from '@/pages/PrivacidadePage';
 import ContatoPage from '@/pages/ContatoPage';
@@ -36,6 +37,7 @@ const AnimatedRoutes = () => {
         <Route path="/dashboard/estoque" element={<ProtectedRoute><PageTransition><InventoryPage /></PageTransition></ProtectedRoute>} />
         <Route path="/dashboard/financeiro" element={<ProtectedRoute><PageTransition><FinancialPage /></PageTransition></ProtectedRoute>} />
         <Route path="/dashboard/configuracoes" element={<ProtectedRoute><PageTransition><SettingsPage /></PageTransition></ProtectedRoute>} />
+        <Route path="/dashboard/ordens/:osId/print" element={<ProtectedRoute><PrintReceipt /></ProtectedRoute>} />
         
         <Route path="/os/:osNumber" element={<PageTransition><PublicOSLink /></PageTransition>} />
         <Route path="/checkin" element={<ProtectedRoute><PageTransition><CheckinWizard /></PageTransition></ProtectedRoute>} />

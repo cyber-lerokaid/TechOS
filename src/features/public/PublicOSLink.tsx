@@ -116,9 +116,25 @@ const PublicOSLink = () => {
         </section>
 
         {os.status === 'orcamento_enviado' && (
-          <QuoteApproval os={os} onApprove={(approved) => {
+          <QuoteApproval os={os} onApprove={async (approved) => {
+            const newStatus = approved ? 'orcamento_aprovado' : 'orcamento_recusado';
             // Optimistic update
-            setOs(prev => prev ? { ...prev, status: approved ? 'orcamento_aprovado' : 'orcamento_recusado' } : null);
+            setOs(prev => prev ? { ...prev, status: newStatus } : null);
+            
+            // Persist to database
+            try {
+              const { error } = await supabase
+                .from('ordens_de_servico')
+                .update({ status: newStatus })
+                .eq('id', os.id);
+              
+              if (error) {
+                console.error('Erro ao salvar aprovação:', error);
+                // Revert optimistic update on error if needed
+              }
+            } catch (err) {
+              console.error('Falha na comunicação com o servidor', err);
+            }
           }} />
         )}
 

@@ -20,5 +20,15 @@ export const orderSupabaseApi: IOrderApi = {
     const { data, error } = await supabase.from('service_orders').update({ status }).eq('id', id).select('*, customers(nome, telefone)').single();
     if (error) handleApiError(error, 'Erro ao atualizar status da OS');
     return mapOrderFromDB(data);
+  },
+  async updateOrder(id: string, payload: any) {
+    const dbPayload: any = {};
+    if (payload.valorMaoObra !== undefined) dbPayload.valor_mao_obra = payload.valorMaoObra;
+    if (payload.valorPecas !== undefined) dbPayload.valor_pecas = payload.valorPecas;
+    if (payload.status !== undefined) dbPayload.status = payload.status;
+    
+    const { data, error } = await supabase.from('service_orders').update(dbPayload).eq('id', id).select('*, customers(nome, telefone)').single();
+    if (error) handleApiError(error, 'Erro ao atualizar OS');
+    return mapOrderFromDB(data);
   }
 };

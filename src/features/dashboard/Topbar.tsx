@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Plus, Menu, LogOut } from 'lucide-react';
+import { Search, Bell, Plus, Menu, LogOut, ScanLine } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/app/providers/AuthContext';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
-import { fetchOrdensServico, fetchDemoCustomers } from '@/lib/services/osService';
+import { orderApi } from '@/shared/lib/api/order.api';
+import { customerApi } from '@/shared/lib/api/customer.api';
 import { getCriticalStock } from '@/data/mock-data';
+import { ScannerModal } from '@/components/modals/ScannerModal';
 import './Topbar.css';
 
 const Topbar = () => {
@@ -14,6 +16,7 @@ const Topbar = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -23,12 +26,18 @@ const Topbar = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      const osData = await fetchOrdensServico(isDemoMode);
-      setOrders(osData || []);
-      
-      if (isDemoMode) {
-        setCustomers(fetchDemoCustomers());
-        setCriticalStock(getCriticalStock());
+      try {
+        const osData = await orderApi.getOrders();
+        setOrders(osData || []);
+        
+        const custData = await customerApi.getCustomers();
+        setCustomers(custData || []);
+        
+        if (isDemoMode) {
+          setCriticalStock(getCriticalStock());
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dados do Topbar", err);
       }
     };
     loadData();
@@ -40,13 +49,21 @@ const Topbar = () => {
     };
   }, [isDemoMode]);
 
-  const filteredOrders = orders.filter(os => 
-    os.numeroOs?.includes(searchTerm) || os.deviceLabel?.toLowerCase().includes(searchTerm.toLowerCase())
-  ).slice(0, 3);
+  const safeLower = (str: any) => (str || '').toString().toLowerCase();
+
+  const filteredOrders = orders.filter(os => {
+    const search = safeLower(searchTerm);
+    return safeLower(os.numeroOs).includes(search) || 
+           safeLower(os.deviceLabel).includes(search) ||
+           safeLower(os.customerNome).includes(search);
+  }).slice(0, 5);
   
-  const filteredCustomers = customers.filter(c => 
-    c.nome?.toLowerCase().includes(searchTerm.toLowerCase()) || c.telefone?.includes(searchTerm)
-  ).slice(0, 3);
+  const filteredCustomers = customers.filter(c => {
+    const search = safeLower(searchTerm);
+    return safeLower(c.nome).includes(search) || 
+           safeLower(c.telefone).includes(search) ||
+           safeLower(c.email).includes(search);
+  }).slice(0, 5);
 
   const handleSearchClick = (path: string) => {
     setIsSearchOpen(false);
@@ -74,8 +91,8 @@ const Topbar = () => {
           <Menu size={24} />
         </Button>
         
-        <div className="topbar-search" ref={searchRef} style={{ position: 'relative' }}>
-          <Search size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+        <div className="topbar-search" ref={searchRef} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <Search size={16} style={{ position: 'absolute', left: '16px', color: 'var(--text-muted)' }} />
           <input 
             type="text" 
             placeholder="Buscar OS, cliente ou aparelho... (Ctrl+K)" 
@@ -85,7 +102,15 @@ const Topbar = () => {
               setIsSearchOpen(true);
             }}
             onFocus={() => setIsSearchOpen(true)}
+            style={{ paddingRight: '48px' }}
           />
+          <button 
+            onClick={() => setIsScannerOpen(true)}
+            className="absolute right-2 p-1.5 text-zinc-400 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+            title="Escanear Código"
+          >
+            <ScanLine size={18} />
+          </button>
           
           {isSearchOpen && searchTerm.length > 1 && (
             <div className="search-dropdown">
@@ -164,6 +189,20 @@ const Topbar = () => {
           </Button>
         </div>
       </div>
+      
+      <ScannerModal 
+        isOpen={isScannerOpen} 
+        onClose={() => setIsScannerOpen(false)} 
+        onScan={(text) => {
+          setSearchTerm(text);
+          setIsSearchOpen(true);
+          // Opcional: já redirecionar caso encontre uma OS exata
+          const found = orders.find(o => o.numeroOs === text);
+          if (found) {
+            navigate(`/dashboard/ordens?search=${encodeURIComponent(text)}`);
+          }
+        }}
+      />
     </header>
   );
 };

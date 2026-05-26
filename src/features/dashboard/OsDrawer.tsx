@@ -133,7 +133,7 @@ export const OsDrawer = ({ osId, onClose }: OsDrawerProps) => {
                   value={osData.problemaRelatado || "Tela trincada após queda. Bateria também está descarregando muito rápido."}
                 />
                 
-                {osData.garantiaDias && (
+                {osData.garantiaDias > 0 && (
                   <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-center gap-3">
                     <CheckCircle2 className="text-blue-400" size={20} />
                     <div>
@@ -199,7 +199,7 @@ export const OsDrawer = ({ osId, onClose }: OsDrawerProps) => {
                   <FileText size={16} /> Assinatura do Cliente
                 </h3>
                 {osData.assinaturaUrl ? (
-                  <div className="bg-zinc-200 rounded-lg p-2 max-w-sm">
+                  <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 max-w-sm flex items-center justify-center">
                     <img src={osData.assinaturaUrl} alt="Assinatura do Cliente" className="w-full h-auto object-contain" style={{ maxHeight: '150px' }} />
                   </div>
                 ) : (
@@ -294,16 +294,19 @@ export const OsDrawer = ({ osId, onClose }: OsDrawerProps) => {
 
         {/* Footer */}
         <div className="p-6 border-t border-zinc-800 bg-zinc-950 flex justify-end gap-4">
-          <Button variant="outline">
-            Gerar PDF da OS
+          <Button 
+            variant="outline" 
+            onClick={() => window.open(`/dashboard/ordens/${osData?.id}/print`, '_blank')}
+          >
+            🖨️ Imprimir OS
           </Button>
           
-          {osData && osData.status === 'em_analise' && (
+          {osData && (osData.status === 'em_analise' || osData.status === 'orcamento_enviado' || osData.status === 'aguardando_peca' || osData.status === 'em_bancada') && (
             <Button 
               onClick={() => setIsQuoteModalOpen(true)}
               className="bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20 gap-2"
             >
-              💰 Criar Orçamento
+              💰 {(osData.valorMaoObra || osData.valorPecas) ? 'Alterar Orçamento' : 'Criar Orçamento'}
             </Button>
           )}
 
@@ -319,11 +322,40 @@ export const OsDrawer = ({ osId, onClose }: OsDrawerProps) => {
         <QuoteModal 
           os={osData} 
           onClose={() => setIsQuoteModalOpen(false)} 
-          onSaveQuote={(maoDeObra, pecas) => {
-            // Update OS logic via context or API should be here. For demo, we just alert.
-            alert(`Orçamento salvo: ${formatBRL(maoDeObra + pecas)}`);
-            setIsQuoteModalOpen(false);
-            window.dispatchEvent(new Event('osUpdated'));
+          onSaveQuote={async (maoDeObra, pecas) => {
+            try {
+              const newStatus = osData.status === 'em_analise' ? 'em_bancada' : osData.status;
+
+              await orderApi.updateOrder(osData.id, {
+                valorMaoObra: maoDeObra,
+                valorPecas: pecas,
+                status: newStatus
+              });
+
+              if (newStatus !== osData.status) {
+                MOCK_STATUS_HISTORY.unshift({
+                  id: `hist_${Date.now()}`,
+                  osId: osData.id,
+                  statusAnterior: osData.status,
+                  statusNovo: newStatus,
+                  changedById: 'user_001',
+                  changedByNome: 'Técnico Atual',
+                  criadoEm: new Date().toISOString(),
+                  notaInterna: 'Orçamento gerado e movido para bancada',
+                  notaPublica: 'Seu aparelho está em nossa bancada de manutenção!'
+                });
+              }
+
+              setIsQuoteModalOpen(false);
+              window.dispatchEvent(new Event('osUpdated'));
+              window.dispatchEvent(new CustomEvent('osStatusChanged', {
+                detail: { os: { ...osData, status: newStatus, valorMaoObra: maoDeObra, valorPecas: pecas } }
+              }));
+              
+              setOsData(prev => prev ? { ...prev, status: newStatus as any, valorMaoObra: maoDeObra, valorPecas: pecas } : null);
+            } catch (err) {
+              console.error(err);
+            }
           }}
         />
       )}

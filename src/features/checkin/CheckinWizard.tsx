@@ -215,8 +215,8 @@ const CheckinWizard = () => {
 
     if (isDemoMode) {
       const found = demoStore.customers.filter(c => 
-        c.nome.toLowerCase().includes(q.toLowerCase()) || 
-        c.telefone.includes(q)
+        c.nome?.toLowerCase().includes(q.toLowerCase()) || 
+        c.telefone?.includes(q)
       );
       setSearchResults(found);
     } else {
@@ -224,7 +224,7 @@ const CheckinWizard = () => {
       searchTimeoutRef.current = setTimeout(async () => {
         try {
           const { data, error } = await supabase
-            .from('clientes')
+            .from('customers')
             .select('*')
             .ilike('nome', `%${q}%`)
             .limit(5);
@@ -304,14 +304,10 @@ const CheckinWizard = () => {
     setIsCreatingCustomer(true);
     try {
       const newCustomerData = {
-        tenant_id: 'default-tenant',
+        tenant_id: tenant?.id || 'tenant_001',
         nome: newCustomerName,
         telefone: newCustomerPhone,
         email: null,
-        cep: cep,
-        endereco: endereco,
-        total_gasto: 0,
-        total_os: 0
       };
 
       if (isDemoMode) {
@@ -321,12 +317,13 @@ const CheckinWizard = () => {
           criado_em: new Date().toISOString()
         };
         demoStore.customers.push(fakeCustomer as any);
+        demoStore.saveCustomers();
         setSelectedCustomer(fakeCustomer);
         setSearchQuery(fakeCustomer.nome);
         await createDraftOs(fakeCustomer);
       } else {
         const { data, error } = await supabase
-          .from('clientes')
+          .from('customers')
           .insert([newCustomerData])
           .select()
           .single();
@@ -467,7 +464,7 @@ const CheckinWizard = () => {
                 </div>
                 
                 <div className="relative flex items-center">
-                  <Search className="absolute left-4 text-white/40" size={20} />
+                  <Search className="absolute left-4 text-white/40 pointer-events-none" size={20} />
                   <input 
                     type="text" 
                     placeholder="Busque por nome ou telefone (ex: Carlos Ferreira)" 

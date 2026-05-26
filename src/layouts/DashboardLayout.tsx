@@ -43,20 +43,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         {isDemoMode && (
           <div className="demo-banner">
             <span>✨ Modo demonstração ativo — dados fictícios</span>
-            <button 
-              className="demo-banner-simulate"
-              onClick={() => {
-                applyDemoScenarios();
-                queryClient.invalidateQueries({ queryKey: ['orders'] });
-                queryClient.invalidateQueries({ queryKey: ['customers'] });
-                queryClient.invalidateQueries({ queryKey: ['inventory'] });
-                window.dispatchEvent(new CustomEvent('showToast', { 
-                  detail: { message: '5 cenários de demonstração gerados com sucesso!', type: 'success' } 
-                }));
-              }}
-            >
-              👥 Simular 5 Clientes
-            </button>
             <Link to="/register" className="demo-banner-cta">Criar minha conta 👉</Link>
             <button onClick={signOut} className="demo-banner-close">✕</button>
           </div>

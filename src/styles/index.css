@@ -83,4 +83,18 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .btn-press {
+    @apply transition-transform duration-150 active:scale-[0.97];
+  }
 }

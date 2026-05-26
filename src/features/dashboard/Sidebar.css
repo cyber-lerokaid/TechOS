@@ -24,6 +24,12 @@
   max-height: 64px;
   display: flex;
   justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.sidebar-logo:hover img {
+  animation: float-minimal 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(96, 165, 250, 0.4));
 }
 
 .sidebar-logo img {
@@ -100,6 +106,11 @@
   border-left-color: rgba(255,255,255,0.08);
 }
 
+.nav-item:hover:not(.active) .nav-icon {
+  transform: translateX(3px);
+  color: rgba(96, 165, 250, 0.7);
+}
+
 .nav-item.active {
   background: linear-gradient(90deg, rgba(37,99,235,0.18) 0%, rgba(37,99,235,0.06) 100%);
   color: #93C5FD;
@@ -115,6 +126,7 @@
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+  transition: all 0.25s ease-out;
 }
 
 .nav-dot {

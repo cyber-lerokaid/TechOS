@@ -9,6 +9,7 @@ export interface IOrderApi {
   getOrders(): Promise<any[]>;
   createOrder(payload: any): Promise<any>;
   updateOrderStatus(id: string, status: string): Promise<any>;
+  updateOrder(id: string, payload: any): Promise<any>;
 }
 
 export interface IInventoryApi {

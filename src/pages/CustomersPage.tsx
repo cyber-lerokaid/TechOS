@@ -151,7 +151,7 @@ const CustomersPage = () => {
             { label: 'Inativos (+6 meses)', value: clientesInativos, color: '#F87171', urgent: clientesInativos > 0 },
             { label: 'LTV Médio', value: formatBRL(ltvMedio), color: '#34D399', urgent: false },
           ].map(card => (
-            <div key={card.label} style={{
+            <div key={card.label} className="hover-lift" style={{
               background: card.urgent ? 'rgba(239,68,68,0.06)' : 'rgba(255,255,255,0.03)',
               border: `1px solid ${card.urgent ? 'rgba(239,68,68,0.20)' : 'rgba(255,255,255,0.06)'}`,
               borderRadius: 10, padding: '12px 16px',

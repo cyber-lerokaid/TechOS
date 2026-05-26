@@ -120,63 +120,61 @@ export const QuoteModal = ({ os, onClose, onSaveQuote }: QuoteModalProps) => {
 
   return (
     <>
-    <div className="modal-overlay">
-      <div className="modal-content" style={{ maxWidth: '500px' }}>
-        <div className="modal-header">
-          <h2>Gerar Orçamento Inteligente</h2>
-          <button onClick={onClose} className="btn-close"><X size={20} /></button>
+    <div className="fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
+      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full shadow-2xl flex flex-col max-h-[90vh]" style={{ maxWidth: '500px' }}>
+        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+          <h2 className="text-lg font-bold text-white m-0">Gerar Orçamento Inteligente</h2>
+          <button onClick={onClose} className="text-zinc-400 hover:text-white p-1 rounded hover:bg-white/10 transition-colors"><X size={20} /></button>
         </div>
 
         {isGenerating ? (
-          <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-            <Sparkles size={32} color="var(--color-primary)" className="spin-animation" style={{ margin: '0 auto 16px' }} />
-            <h3 style={{ margin: '0 0 8px' }}>Analisando o problema relatado...</h3>
-            <p style={{ color: 'var(--text-muted)' }}>A IA está buscando peças e calculando mão de obra ideal.</p>
+          <div className="p-10 text-center flex flex-col items-center">
+            <Sparkles size={32} className="text-blue-500 spin-animation mb-4" />
+            <h3 className="text-lg font-medium text-white mb-2">Analisando o problema relatado...</h3>
+            <p className="text-zinc-400 text-sm">A IA está buscando peças e calculando mão de obra ideal.</p>
           </div>
         ) : (
-          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="p-6 flex flex-col gap-5 overflow-y-auto">
             
-            <div style={{ backgroundColor: 'var(--bg-elevated)', padding: '16px', borderRadius: '8px', border: '1px solid var(--color-primary)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--color-primary)', fontWeight: 600 }}>
+            <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20">
+              <div className="flex items-center gap-2 mb-3 text-blue-400 font-semibold text-sm">
                 <Sparkles size={18} /> Orçamento Sugerido
               </div>
-              <ul style={{ paddingLeft: '20px', color: 'var(--text-muted)', fontSize: '14px', marginBottom: '16px' }}>
+              <ul className="list-disc pl-5 text-zinc-300 text-sm mb-5 space-y-1">
                 {reasons.map((r, i) => <li key={i}>{r}</li>)}
               </ul>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Mão de Obra</label>
-                  <input type="number" value={maoDeObra} onChange={e => setMaoDeObra(Number(e.target.value))} style={{ width: '100%', padding: '8px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '4px', color: 'var(--text-primary)' }} />
+                  <label className="block text-xs text-zinc-400 mb-1.5 font-medium">Mão de Obra</label>
+                  <input type="number" value={maoDeObra} onChange={e => setMaoDeObra(Number(e.target.value))} className="w-full p-2.5 bg-black/40 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-blue-500 transition-colors" />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Peças</label>
-                  <input type="number" value={pecas} onChange={e => setPecas(Number(e.target.value))} style={{ width: '100%', padding: '8px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '4px', color: 'var(--text-primary)' }} />
+                  <label className="block text-xs text-zinc-400 mb-1.5 font-medium">Peças</label>
+                  <input type="number" value={pecas} onChange={e => setPecas(Number(e.target.value))} className="w-full p-2.5 bg-black/40 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-blue-500 transition-colors" />
                 </div>
               </div>
 
-              <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: 'var(--bg-card)', borderRadius: '8px' }}>
-                <span style={{ fontWeight: 600 }}>Valor Total</span>
-                <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-primary)' }}>{formatBRL(total)}</span>
+              <div className="mt-5 flex justify-between items-center p-4 bg-black/40 rounded-lg border border-zinc-800">
+                <span className="font-semibold text-zinc-300">Valor Total</span>
+                <span className="text-xl font-bold text-blue-400">{formatBRL(total)}</span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div className="flex gap-3 mt-2">
               <button 
                 onClick={() => onSaveQuote(maoDeObra, pecas)} 
-                className="btn btn-outline" 
-                style={{ flex: 1 }}
+                className="flex-1 py-3 px-4 rounded-lg border border-zinc-700 text-zinc-300 font-medium hover:bg-zinc-800 transition-colors" 
               >
                 Só Salvar Orçamento
               </button>
               <button 
                 onClick={handleSendWhatsApp} 
-                className="btn btn-primary"
-                style={{ flex: 1, backgroundColor: '#25D366', borderColor: '#25D366' }}
+                className="flex-1 py-3 px-4 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 disabled={isSending}
               >
-                {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={18} />} 
-                {isSending ? 'Enviando...' : 'Salvar e Enviar WhatsApp'}
+                {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />} 
+                {isSending ? 'Enviando...' : 'Salvar e Enviar'}
               </button>
             </div>
 

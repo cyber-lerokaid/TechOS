@@ -26,6 +26,7 @@ export const orderDemoApi: IOrderApi = {
       atualizado_em: new Date().toISOString(),
     };
     demoStore.orders.unshift(newDbRow as any);
+    demoStore.saveOrders();
     return mapOrderFromDB(joinCustomer(newDbRow));
   },
   async updateOrderStatus(id: string, status: string) {
@@ -34,6 +35,20 @@ export const orderDemoApi: IOrderApi = {
     if (idx === -1) throw new Error('OS não encontrada');
     demoStore.orders[idx].status = status as any;
     demoStore.orders[idx].atualizado_em = new Date().toISOString();
+    demoStore.saveOrders();
+    return mapOrderFromDB(joinCustomer(demoStore.orders[idx]));
+  },
+  async updateOrder(id: string, payload: any) {
+    await delay(500);
+    const idx = demoStore.orders.findIndex(o => o.id === id);
+    if (idx === -1) throw new Error('OS não encontrada');
+    
+    if (payload.valorMaoObra !== undefined) demoStore.orders[idx].valor_mao_obra = payload.valorMaoObra;
+    if (payload.valorPecas !== undefined) demoStore.orders[idx].valor_pecas = payload.valorPecas;
+    if (payload.status !== undefined) demoStore.orders[idx].status = payload.status;
+    
+    demoStore.orders[idx].atualizado_em = new Date().toISOString();
+    demoStore.saveOrders();
     return mapOrderFromDB(joinCustomer(demoStore.orders[idx]));
   }
 };

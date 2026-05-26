@@ -169,7 +169,7 @@ function KanbanColumn({ column, orders, onCardClick }: { column: any, orders: Se
   );
 }
 
-const KanbanBoard = () => {
+const KanbanBoard = ({ filterMode = 'all' }: { filterMode?: 'all' | 'urgent' }) => {
   const [orders, setOrders] = useState<any[]>([]);
   const [selectedOsId, setSelectedOsId] = useState<string | null>(null);
   const [modalData, setModalData] = useState<{ isOpen: boolean; os: ServiceOrder | null; newStatus: OSStatus | null }>({
@@ -186,9 +186,13 @@ const KanbanBoard = () => {
 
   useEffect(() => {
     if (remoteOrders) {
-      setOrders(remoteOrders);
+      if (filterMode === 'urgent') {
+        setOrders(remoteOrders.filter(o => o.horasAbertas > 48 || o.status === 'aguardando_peca'));
+      } else {
+        setOrders(remoteOrders);
+      }
     }
-  }, [remoteOrders]);
+  }, [remoteOrders, filterMode]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

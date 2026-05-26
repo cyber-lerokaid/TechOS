@@ -76,6 +76,7 @@ export const saveOrdemServico = async (osData: Partial<ServiceOrder>, isDemoMode
     } as ServiceOrder;
 
     demoStore.orders = [novaOs as any, ...demoStore.orders];
+    demoStore.saveOrders();
     
     // Dispara evento global para tabelas e kanban atualizarem
     window.dispatchEvent(new CustomEvent('osUpdated'));
@@ -131,6 +132,7 @@ export const updateOrdemServico = async (id: string, osData: Partial<ServiceOrde
     
     existingOrders[index] = updatedOs as any;
     demoStore.orders = existingOrders;
+    demoStore.saveOrders();
     
     window.dispatchEvent(new CustomEvent('osUpdated'));
     

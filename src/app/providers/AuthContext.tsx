@@ -22,13 +22,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [tenant, setTenant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isExplicitDemo, setIsExplicitDemo] = useState(() => {
-    return sessionStorage.getItem('techos_is_demo') === 'true';
+    return localStorage.getItem('techos_is_demo') === 'true';
   });
   
   const isDemoMode = isExplicitDemo;
 
   const enterDemoMode = () => {
-    sessionStorage.setItem('techos_is_demo', 'true');
+    localStorage.setItem('techos_is_demo', 'true');
     setIsExplicitDemo(true);
     setUser(MOCK_LOGGED_USER);
     setTenant(MOCK_TENANT);
@@ -73,13 +73,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [isExplicitDemo]);
 
   const signIn = async (email: string, password: string) => {
-    sessionStorage.removeItem('techos_is_demo');
+    localStorage.removeItem('techos_is_demo');
     setIsExplicitDemo(false);
     return await supabase.auth.signInWithPassword({ email, password });
   };
 
   const signUp = async (email: string, password: string, nome: string) => {
-    sessionStorage.removeItem('techos_is_demo');
+    localStorage.removeItem('techos_is_demo');
     setIsExplicitDemo(false);
     
     // Na vida real, criaria o usuário e depois inseria na tabela tenants
@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    sessionStorage.removeItem('techos_is_demo');
+    localStorage.removeItem('techos_is_demo');
     setIsExplicitDemo(false);
     setUser(null);
     setTenant(null);

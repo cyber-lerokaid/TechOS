@@ -9,10 +9,16 @@ import { useState } from 'react';
 import { useOrderList } from '@/shared/lib/hooks/orders/useOrderList';
 import { Clock, CheckCircle2, DollarSign, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/app/providers/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { applyDemoScenarios } from '@/lib/services/osService';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [selectedMetricId, setSelectedMetricId] = useState<string | null>(null);
+  const [isFiltering, setIsFiltering] = useState(false);
+  const { isDemoMode } = useAuth();
+  const queryClient = useQueryClient();
 
   const hora = new Date().getHours();
   const saudacao = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
@@ -132,11 +138,35 @@ const Dashboard = () => {
             <div className="flex justify-between items-center px-1">
               <h2 className="text-sm text-white/70 font-semibold tracking-wide uppercase">Ordens de Serviço</h2>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm">Filtrar</Button>
+                {isDemoMode && (
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    className="gap-2 bg-indigo-500/20 text-indigo-200 border-indigo-500/30 hover:bg-indigo-500/30"
+                    onClick={() => {
+                      applyDemoScenarios();
+                      queryClient.invalidateQueries({ queryKey: ['orders'] });
+                      queryClient.invalidateQueries({ queryKey: ['customers'] });
+                      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+                      window.dispatchEvent(new CustomEvent('showToast', { 
+                        detail: { message: '5 cenários de demonstração gerados com sucesso!', type: 'success' } 
+                      }));
+                    }}
+                  >
+                    👥 Simular 5 Clientes
+                  </Button>
+                )}
+                <Button 
+                  variant={isFiltering ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => setIsFiltering(!isFiltering)}
+                >
+                  {isFiltering ? 'Limpar Filtros' : 'Filtrar Urgentes'}
+                </Button>
               </div>
             </div>
             <div className="flex-1 overflow-visible">
-              <KanbanBoard />
+              <KanbanBoard filterMode={isFiltering ? 'urgent' : 'all'} />
             </div>
           </div>
 
